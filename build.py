@@ -150,11 +150,15 @@ def lsr(p: str, fltr = lambda x : True, force_recurse = False):
 match argv[1:]:
   case ('setup',):
     if TARGET == "Windows":
-      if not has_program("scoop"):
-        pinfo("Installing scoop...")
+      assert False, "TODO"
+    elif has_program('apt'): # debian based, looking for qt6
+      pinfo("Installing qt6 library...")
+      if not os.getuid() == 0:
+        perr("Please run this command as root.")
+        quit(1)
+      shell("apt install qt6-base-dev")
     else:
-      pass
-    assert False, "TODO"
+      assert False, "TODO"
   case ('test',):
     need_program("cmake")
     shell("cmake -DCMAKE_BUILD_TYPE=Debug -B bin")
