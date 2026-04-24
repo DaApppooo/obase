@@ -162,10 +162,20 @@ match argv[1:]:
   case ('test',):
     need_program("cmake")
     shell("cmake -DCMAKE_BUILD_TYPE=Debug -B bin")
-    shell("cmake -DCMAKE_BUILD_TYPE=Debug --build bin --target test")
+    shell("cmake --build bin --target test")
     shell(os.path.join("bin", "test"))
   # Add other compilation commands here
-
+  case ('db-test',):
+    need_program("cmake")
+    need_program("gdb")
+    shell("cmake -DCMAKE_BUILD_TYPE=Debug -B bin")
+    shell("cmake --build bin --target test")
+    shell("gdb --args " + os.path.join("bin", "test"))
+  case ('asan-test',):
+    need_program("cmake")
+    shell("cmake -DCMAKE_BUILD_TYPE=Debug -B bin")
+    shell("cmake --build bin --target asan_test")
+    shell(os.path.join("bin", "asan_test"))
   case _:
     perr("No command specified.")
     quit(1)

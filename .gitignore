@@ -1,6 +1,12 @@
 # Binaries
 bin/*
 
+# Editor stuff
+.cache/*
+.vscode/*
+doc/.$*
+compile_commands.json
+
 # Prerequisites
 *.d
 
