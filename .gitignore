@@ -6,6 +6,9 @@ bin/*
 .vscode/*
 doc/.$*
 compile_commands.json
+__pycache__
+include/*
+lib/*
 
 # Prerequisites
 *.d
