@@ -1,6 +1,9 @@
 # Binaries
 bin/*
 
+# Ressources
+res/*
+
 # Editor stuff
 .cache/*
 .vscode/*
