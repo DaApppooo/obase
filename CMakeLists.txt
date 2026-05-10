@@ -9,7 +9,10 @@ link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 set(CMAKE_CXX_STANDARD 23)
 set(SRC
-  
+  src/app.cpp
+  src/anchor.cpp
+  src/layout.cpp
+  src/widget.cpp
 )
 
 add_executable(test

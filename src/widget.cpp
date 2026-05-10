@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstddef>
 #include "macros.hpp"
+#include "raylib.h"
 #include "types.hpp"
 
 void Widget::debug_draw()
@@ -14,12 +15,13 @@ void Widget::debug_draw()
 #endif
 }
 
-void Widget::on_click() {}
+void Widget::on_click(MouseButton) {}
 void Widget::on_hover() {}
-void Widget::on_drag() {}
-void Widget::on_release() {}
-void Widget::on_keydown() {}
-void Widget::on_keyup() {}
+void Widget::on_double_click() {}
+void Widget::on_drag(MouseButton) {}
+void Widget::on_release(MouseButton) {}
+void Widget::on_keydown(KeyboardKey) {}
+void Widget::on_keyup(KeyboardKey) {}
 
 Widget::~Widget() {}
 
