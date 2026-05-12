@@ -1,7 +1,14 @@
 #include "anchor.hpp"
+#include "widget.hpp"
+#include <cassert>
 
-void Anchor::update()
+
+
+bool Anchor::update()
 {
+  if (A == nullptr || B == nullptr)
+    return false;
+  bool changed = false;
   if (A_where < TWO_POINT_ANCHOR_LIMIT)
   {
     assert(B_where < TWO_POINT_ANCHOR_LIMIT);
@@ -55,6 +62,7 @@ void Anchor::update()
       default:
         assert(!"Unexpected branch.");
     }
+    changed = old_B != B->rect;
   }
   else
   {
@@ -117,5 +125,7 @@ void Anchor::update()
       default:
         assert(!"Unexpected branch.");
     }
+    changed = old_B != B->rect;
   }
+  return changed;
 }

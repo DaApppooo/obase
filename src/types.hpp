@@ -23,6 +23,14 @@ using uptr = std::unique_ptr<T>;
 using Rect = Rectangle;
 using Vec2 = Vector2;
 
+constexpr bool operator == (Rect a, Rect b)
+{
+  return a.x == b.x
+         and a.y == b.y
+         and a.width == b.width
+         and a.height == b.height;
+}
+
 template <class... Ts>
 struct TypeSet
 {

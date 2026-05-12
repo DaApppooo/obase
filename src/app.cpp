@@ -3,24 +3,61 @@
 #include "raymath.h"
 #include "widget.hpp"
 #include "sys_settings.hpp"
+#include <unistd.h>
 
 f32 App::DOUBLE_CLICK_TIME;
+App* _obase_current_app;
+App& app()
+{
+#ifdef _DEBUG
+  if (!_obase_current_app)
+    assert(!"You forgot to initialize your app.");
+#endif
+  return *_obase_current_app;
+}
+Palette& palette()
+{
+#ifdef _DEBUG
+  if (!_obase_current_app)
+    assert(!"You forgot to initialize your app.");
+#endif
+  return _obase_current_app->palette;
+}
+Font& font()
+{
+#ifdef _DEBUG
+  if (!_obase_current_app)
+    assert(!"You forgot to initialize your app.");
+#endif
+  return _obase_current_app->palette.font;
+}
 
 void App::init(Own<Widget*> root)
 {
   DOUBLE_CLICK_TIME = double_click_time();
+  if (system_theme() == THEME_DARK)
+    palette = Palette::breeze_dark();
+  else
+    palette = Palette::breeze_light();
+  focused = nullptr;
   _src.reset(root);
+  _obase_current_app = this;
+  current_scissor = {0, 0, 1600, 900};
 }
 
 void App::run(const char* title)
 {
   SetTargetFPS(60);
+  SetConfigFlags(
+    FLAG_WINDOW_RESIZABLE
+  );
   InitWindow(1600, 900, title);
   _redraw = true;
   IFDEBUG(bool show_debug = false;)
   while (!WindowShouldClose())
   {
     _events();
+    _src->update();
     IFDEBUG(
     if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_D))
     {
@@ -50,17 +87,22 @@ void App::_events()
   BTNS(Pressed, on_click);
   BTNS(Down, on_drag);
   BTNS(Released, on_release);
+  let screen_w = GetScreenWidth(), screen_h = GetScreenHeight();
+  if (_src->rect.width != screen_w || _src->rect.height != screen_h)
+    redraw();
+  _src->rect = {0, 0, f32(screen_w), f32(screen_h)};
+  let mpo = GetMousePosition();
   if ( 
       IsMouseButtonPressed(MOUSE_BUTTON_LEFT)
   and double_click_timer <= DOUBLE_CLICK_TIME
-  and Vector2Distance(double_click_loc, GetMousePosition()) < DOUBLE_CLICK_MAX_DIST
+  and Vector2Distance(double_click_loc, mpo) < DOUBLE_CLICK_MAX_DIST
   ) {
     _src->on_double_click();
     double_click_timer = 1000.f;
   }
   if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
   {
-    double_click_loc = GetMousePosition();
+    double_click_loc = mpo;
     double_click_timer = 0.f;
   }
   double_click_timer += GetFrameTime();
@@ -73,6 +115,19 @@ void App::_events()
 
   if (focused)
   {
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+      focused->on_drag(MOUSE_BUTTON_LEFT);
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+      focused->on_drag(MOUSE_BUTTON_RIGHT);
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+      focused->on_drag(MOUSE_BUTTON_MIDDLE);
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+      focused->on_release(MOUSE_BUTTON_LEFT);
+    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+      focused->on_release(MOUSE_BUTTON_RIGHT);
+    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+      focused->on_release(MOUSE_BUTTON_MIDDLE);
+    
     int key;
     while ((key = GetKeyPressed()))
     {

@@ -1,5 +1,9 @@
 #pragma once
-#include "widget.hpp"
+#include "macros.hpp"
+#include "types.hpp"
+#include <ostream>
+
+struct Widget;
 
 enum AnchorPoint
 {
@@ -11,6 +15,20 @@ enum AnchorPoint
   TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT,
   CENTER
 };
+
+macro std::ostream& format(std::ostream& out, const AnchorPoint& p)
+{
+  switch (p)
+  {
+#define C(NAME) case NAME: out << #NAME; break;
+    C(LEFT) C(RIGHT) C(TOP) C(BOTTOM)
+    C(CENTER_X) C(CENTER_Y)
+    C(TOP_LEFT) C(TOP_RIGHT) C(BOTTOM_LEFT) C(BOTTOM_RIGHT)
+    C(CENTER)
+    default: out << "UNKNOWN"; break;
+  }
+  return out;
+}
 
 struct Anchor
 {
@@ -35,7 +53,14 @@ struct Anchor
   inline Anchor& resizable() { B_resize = true; return *this; }
   inline Anchor& margin(f32 m) { _margin = m; return *this; }
 
-  void update();
+  // Returns true if the size of who's anchored changed.
+  bool update();
 };
 
+macro std::ostream& format(std::ostream& out, const Anchor& anch)
+{
+  out << "Anchor("
+      << anch.B_where << " of " << anch.B
+      << anch.A_where << " of " << 
+}
 

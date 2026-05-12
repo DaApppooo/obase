@@ -13,6 +13,8 @@ set(SRC
   src/anchor.cpp
   src/layout.cpp
   src/widget.cpp
+  src/text.cpp
+  src/sys_settings.cpp
 )
 
 add_executable(test
@@ -27,6 +29,8 @@ add_executable(asan_test
 #   ${SRC}
 # )
 
+target_link_libraries(test -lraylib)
+target_link_libraries(asan_test -lraylib)
 target_compile_options(asan_test PRIVATE -fsanitize=address)
 target_link_options(asan_test PRIVATE -fsanitize=address)
 

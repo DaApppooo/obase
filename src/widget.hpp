@@ -1,22 +1,15 @@
 #pragma once
+#include "anchor.hpp"
 #include "macros.hpp"
 #include "raylib.h"
 
 using WidgetFlag = u32;
-// The widget top position is self-defined
-macro WidgetFlag T_ANCHORED  = 0b0000001;
 // The widget can be focused (ex: for keyboard actions).
 macro WidgetFlag FOCUSABLE   = 0b0000010;
 // The widget can be resized by the user in the X direction
 macro WidgetFlag X_RESIZABLE = 0b0000100;
 // The widget can be resized by the user in the Y direction
 macro WidgetFlag Y_RESIZABLE = 0b0001000;
-// The widget left position is self-defined
-macro WidgetFlag L_ANCHORED  = 0b0010000;
-// The widget right position is self-defined
-macro WidgetFlag R_ANCHORED  = 0b0100000;
-// The widget bottom position is self-defined
-macro WidgetFlag B_ANCHORED  = 0b1000000;
 
 enum Orientation
 {
@@ -26,10 +19,9 @@ enum Orientation
 
 struct Widget
 {
+  Anchor anchors[4];
   Widget* parent;
-#ifdef _DEBUG
   std::string _name;
-#endif
   Rect rect;
   WidgetFlag flags;
 
@@ -54,6 +46,27 @@ struct Widget
   inline f32 top(f32 v) { return y(v); }
   inline f32 right(f32 v) { return x(v-w()); }
   inline f32 bottom(f32 v) { return y(v-h()); }
+
+  inline Widget* set_size(Vec2 wh)
+  { rect.width = wh.x; rect.height = wh.y; return this; }
+  inline Widget* place(Rect rect_) { rect = rect_; return this; }
+  inline Widget* place(f32 x, f32 y, f32 w, f32 h) { return place({x,y,w,h}); }
+
+  inline Widget* fill_parent()
+  {
+    anchors[0].anchor(this, TOP_LEFT).on(parent, TOP_LEFT);
+    anchors[1].anchor(this, BOTTOM_RIGHT).on(parent, BOTTOM_RIGHT);
+    return this;
+  }
+  inline Widget* center_in_parent()
+  {
+    anchors[0].anchor(this, CENTER).on(parent, CENTER);
+    return this;
+  }
+  
+  
+  // Search for a child named 'name'. If not found, returns nullptr.
+  virtual Widget* request(std::string_view name);
   
   virtual void debug_draw();
 
@@ -78,7 +91,7 @@ struct Widget
   // To ask for a redraw you can use app().redraw()
   virtual void draw() = 0;
   // Called aounrd 60 times a second.
-  virtual void update() = 0;
+  virtual void update();
   virtual ~Widget() = 0;
 };
 

@@ -5,6 +5,8 @@
 #include <bitset>
 #include <string_view>
 
+#define EXPAND_RECT(RECT) (RECT).x, (RECT).y, (RECT).width, (RECT).height
+
 struct Widget;
 
 enum UIState
@@ -16,6 +18,24 @@ enum UIState
   UI_FOCUSED,
   UI_STATE_COUNT
 };
+
+inline void fit_rect_inside(Rect& fit_me, Rect inside_me)
+{
+  if (fit_me.x < inside_me.x)
+  {
+    fit_me.width -= inside_me.x - fit_me.x;
+    fit_me.x = inside_me.x;
+  }
+  if (fit_me.y < inside_me.y)
+  {
+    fit_me.height -= inside_me.y - fit_me.y;
+    fit_me.y = inside_me.y;
+  }
+  if (fit_me.x+fit_me.width > inside_me.x+inside_me.width)
+    fit_me.width = inside_me.x+inside_me.width-fit_me.x;
+  if (fit_me.y+fit_me.height > inside_me.y+inside_me.height)
+    fit_me.height = inside_me.y+inside_me.height-fit_me.y;
+}
 
 struct Palette
 {
@@ -57,6 +77,7 @@ struct App
   Vec2 double_click_loc;
   f32 double_click_timer;
   bool _redraw;
+  Rect current_scissor;
 
   App() = default;
 
@@ -64,6 +85,21 @@ struct App
 
   void run(const char* title);
 
+  inline Rect scissor_begin(Rect new_scissor)
+  {
+    Rect temp = current_scissor;
+    EndScissorMode();
+    fit_rect_inside(new_scissor, current_scissor);
+    current_scissor = new_scissor;
+    BeginScissorMode(EXPAND_RECT(new_scissor));
+    return temp;
+  }
+  inline void scissor_end(Rect old_scissor)
+  {
+    EndScissorMode();
+    current_scissor = old_scissor;
+    BeginScissorMode(EXPAND_RECT(old_scissor));
+  }
   inline void redraw() { _redraw = true; }
 
   void _events();

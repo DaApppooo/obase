@@ -2,6 +2,8 @@
 #include "anchor.hpp"
 #include "app.hpp"
 #include "raylib.h"
+#include "macros.hpp"
+#include <cmath>
 #include <iostream>
 using namespace std;
 
@@ -37,7 +39,11 @@ void Text::on_double_click()
   cerr << "Text selection not supported for now." << endl;
 }
 
-void Text::update() {}
+void Text::update()
+{
+  println("Rect in text: {}", rect);
+  Widget::update();
+}
 
 void Text::draw()
 {

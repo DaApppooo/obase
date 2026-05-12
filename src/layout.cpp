@@ -1,4 +1,5 @@
 #include "layout.hpp"
+#include "app.hpp"
 #include "raylib.h"
 #include "widget.hpp"
 
@@ -7,6 +8,19 @@ Layout::Layout(std::string&& name)
     children(),
     gap(0)
 {}
+
+Widget* Layout::request(std::string_view name)
+{
+  Widget* ptr;
+  for (uptr<Widget>& w : children)
+  {
+    if (w->_name == name)
+      return w.get();
+    if ((ptr = w->request(name)))
+      return ptr;
+  }
+  return nullptr;
+}
 
 void Layout::debug_draw()
 {
@@ -17,12 +31,15 @@ void Layout::debug_draw()
 
 void Layout::draw()
 {
+  let old_scissor = app().scissor_begin(rect);
   for (uptr<Widget>& w : children)
     w->draw();
+  app().scissor_end(old_scissor);
 }
 
 void Layout::update()
 {
+  Widget::update();
   if (parent == nullptr)
   {
     x(0);
@@ -30,6 +47,8 @@ void Layout::update()
     w(GetScreenWidth());
     h(GetScreenHeight());
   }
+  if (old_rect.width == 0 || old_rect.height == 0)
+    old_rect = rect;
   for (uptr<Widget>& child : children)
   {
     let rx = (child->rect.x - old_rect.x)/old_rect.width;
@@ -50,3 +69,21 @@ void Layout::update()
 
 Layout::~Layout()
 {}
+
+#define PASS_ON_MOUSE(METH, BTN_T, NAME) \
+void Layout::METH(BTN_T NAME) \
+{ \
+  for (uptr<Widget>& w : children) \
+  { \
+    if (CheckCollisionPointRec(GetMousePosition(), w->rect)) \
+      w->METH(NAME); \
+  } \
+}
+
+PASS_ON_MOUSE(on_hover,,);
+PASS_ON_MOUSE(on_scroll,,);
+PASS_ON_MOUSE(on_double_click,,);
+PASS_ON_MOUSE(on_click, MouseButton, btn);
+PASS_ON_MOUSE(on_drag, MouseButton, btn);
+PASS_ON_MOUSE(on_release, MouseButton, btn);
+
