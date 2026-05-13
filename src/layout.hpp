@@ -43,3 +43,6 @@ Layout* Layout::add(Own<Elements*>... elements)
   return this;
 }
 
+void rescale_child(Widget& child, Rect old_rect, Rect rect);
+
+

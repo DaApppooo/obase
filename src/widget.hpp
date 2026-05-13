@@ -4,12 +4,15 @@
 #include "raylib.h"
 
 using WidgetFlag = u32;
-// The widget can be focused (ex: for keyboard actions).
-macro WidgetFlag FOCUSABLE   = 0b0000010;
+// The widget width is locked.
+macro WidgetFlag W_LOCKED    = 0b0000001;
+// The widget height is locked.
+macro WidgetFlag H_LOCKED    = 0b0000010;
 // The widget can be resized by the user in the X direction
 macro WidgetFlag X_RESIZABLE = 0b0000100;
 // The widget can be resized by the user in the Y direction
 macro WidgetFlag Y_RESIZABLE = 0b0001000;
+
 
 enum Orientation
 {
@@ -52,10 +55,12 @@ struct Widget
   inline Widget* place(Rect rect_) { rect = rect_; return this; }
   inline Widget* place(f32 x, f32 y, f32 w, f32 h) { return place({x,y,w,h}); }
 
-  inline Widget* fill_parent()
+  inline Widget* fill_parent(float inset = 0.f)
   {
-    anchors[0].anchor(this, TOP_LEFT).on(parent, TOP_LEFT);
-    anchors[1].anchor(this, BOTTOM_RIGHT).on(parent, BOTTOM_RIGHT);
+    anchors[0].anchor(this, TOP_LEFT).on(parent, TOP_LEFT).resizable()
+      .margin(inset);
+    anchors[1].anchor(this, BOTTOM_RIGHT).on(parent, BOTTOM_RIGHT).resizable()
+      .margin(inset);
     return this;
   }
   inline Widget* center_in_parent()
@@ -90,10 +95,19 @@ struct Widget
   // Called only when redrawing is necessary.
   // To ask for a redraw you can use app().redraw()
   virtual void draw() = 0;
-  // Called aounrd 60 times a second.
+  // Called around 60 times a second.
   virtual void update();
   virtual ~Widget() = 0;
 };
+
+FORMATTER(Widget, [](std::ostream& out, const Widget& ptr)
+{
+  out << "Widget*[at " << (void*)&ptr
+      << "](" << ptr._name
+      << ", parent=" << (void*)ptr.parent
+      << ", rect=" << std::format("{}", ptr.rect)
+      << ")";
+});
 
 
 

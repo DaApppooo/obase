@@ -1,6 +1,7 @@
 #ifndef H_MACROS
 #define H_MACROS
 #include <cassert>
+#include <functional>
 #include <ostream>
 #include <print>
 #include <type_traits>
@@ -59,17 +60,35 @@ inline macro T* alloc(T* p, u32 s)
 macro size_t str_len_s(const char* s)
 { size_t c = 0; if (!s) return c; while (*s) { c++; s++; }; return c; }
 
-// Junction utility between C++23's fmt and the old stream system
-mod
-{
-template <class T>
-concept SmallFormattable = requires (std::ostream& out, const T& obj)
-{ { format(out, obj) } -> std::convertible_to<std::ostream&>; };
+#define FORMATTER(T, FUNC) \
+template <> \
+struct std::formatter<T> \
+{ \
+  template<class ParseContext> \
+  constexpr ParseContext::iterator parse(ParseContext& ctx) \
+  { \
+    auto it = ctx.begin(); \
+    if (it == ctx.end()) \
+      return it; \
+         \
+    while (it != ctx.end() && *it != '}') \
+      ++it; \
+         \
+    return it; \
+  } \
+ \
+  template<class FmtContext> \
+  FmtContext::iterator format(const T& obj, FmtContext& ctx) const \
+  { \
+    std::ostringstream out; \
+    (FUNC)(out, obj); \
+    return std::ranges::copy(std::move(out).str(), ctx.out()).out; \
+  } \
 }
 
-static_assert(!SmallFormattable<const void*>);
 
-macro std::ostream& format(std::ostream& out, const Rect& r)
+
+FORMATTER(Rect, [](std::ostream& out, const Rect& r)
 {
   out << "Rect("
       << r.x << ", "
@@ -77,44 +96,15 @@ macro std::ostream& format(std::ostream& out, const Rect& r)
       << r.width << ", "
       << r.height << ")";
   return out;
-}
-macro std::ostream& format(std::ostream& out, const Vec2& r)
+});
+
+FORMATTER(Vec2, [](std::ostream& out, const Vec2& r)
 {
   out << "Vec2("
       << r.x << ", "
       << r.y << ")";
   return out;
-}
-
-template <class T>
-  requires SmallFormattable<T>
-struct std::formatter<T>
-{
-  template<class ParseContext>
-  constexpr ParseContext::iterator parse(ParseContext& ctx)
-  {
-    auto it = ctx.begin();
-    if (it == ctx.end())
-      return it;
-        
-    while (it != ctx.end() && *it != '}')
-      ++it;
-        
-    return it;
-  }
-
-  template<class FmtContext>
-  FmtContext::iterator format(const T& obj, FmtContext& ctx) const
-  {
-    std::ostringstream out;
-    ::format(out, obj);
-    return std::ranges::copy(std::move(out).str(), ctx.out()).out;
-  }
-
-  macro ~formatter() {}
-};
-
-static_assert(SmallFormattable<Rect>);
+});
 
 inline void __consteval_fail() {}
 

@@ -14,6 +14,7 @@ set(SRC
   src/layout.cpp
   src/widget.cpp
   src/text.cpp
+  src/push_button.cpp
   src/sys_settings.cpp
 )
 

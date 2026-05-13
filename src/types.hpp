@@ -31,6 +31,12 @@ constexpr bool operator == (Rect a, Rect b)
          and a.height == b.height;
 }
 
+constexpr Color operator * (float x, Color c)
+{ return { u8(x*c.r), u8(x*c.g), u8(x*c.b), u8(x*c.a) }; }
+
+constexpr Color operator + (Color a, Color b)
+{ return { u8(a.r+b.r), u8(a.g+b.g), u8(a.b+b.b), u8(a.a+b.a) }; }
+
 template <class... Ts>
 struct TypeSet
 {

@@ -10,6 +10,10 @@ f32 double_click_time()
 { return 0.2f; }
 Theme system_theme()
 { return THEME_DARK; }
+void load_icons(IconBuffer& buf)
+{
+  buf[CROSS] = LoadTexture("res/cross.png");
+}
 
 #else
 #ifdef WIN32

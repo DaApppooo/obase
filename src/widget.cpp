@@ -18,9 +18,9 @@ void Widget::debug_draw()
 {
   let hue = fmodf(ptrdiff_t(parent), 360.f);
   let color = ColorFromHSV(hue, 1.f, 1.f);
-  DrawRectangleRec(rect, color);
+  DrawRectangleLinesEx(rect, 1.f, color);
 #ifdef _DEBUG
-  DrawText(_name.c_str(), rect.x, rect.y + 2.f, 30, color);
+  DrawText(_name.c_str(), rect.x, rect.y + 2.f, 10, color);
 #endif
 }
 

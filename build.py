@@ -38,7 +38,7 @@ def main(argv):
     case ('test',):
       need_program("cmake")
       shell("cmake -DCMAKE_BUILD_TYPE=Debug -B bin")
-      shell("cmake --build bin --target test")
+      shell("cmake --build bin -j 8 --target test")
       shell(os.path.join("bin", "test"))
     # Add other compilation commands here
     case ('db-test',):

@@ -2,6 +2,7 @@
 #include "macros.hpp"
 #include "raylib.h"
 #include "types.hpp"
+#include "sys_settings.hpp"
 #include <bitset>
 #include <string_view>
 
@@ -18,6 +19,7 @@ enum UIState
   UI_FOCUSED,
   UI_STATE_COUNT
 };
+
 
 inline void fit_rect_inside(Rect& fit_me, Rect inside_me)
 {
@@ -47,6 +49,7 @@ struct Palette
   Color text;
   Color text_selected_fg;
   Color text_selected_bg;
+  IconBuffer icons;
 
   static Palette breeze_dark();
   static Palette breeze_light();
@@ -76,7 +79,7 @@ struct App
   Widget* focused;
   Vec2 double_click_loc;
   f32 double_click_timer;
-  bool _redraw;
+  int _redraw;
   Rect current_scissor;
 
   App() = default;
@@ -84,6 +87,8 @@ struct App
   void init(Own<Widget*> root);
 
   void run(const char* title);
+
+  Widget* request(std::string_view name);
 
   inline Rect scissor_begin(Rect new_scissor)
   {
@@ -100,7 +105,7 @@ struct App
     current_scissor = old_scissor;
     BeginScissorMode(EXPAND_RECT(old_scissor));
   }
-  inline void redraw() { _redraw = true; }
+  inline void redraw() { if (_redraw > 1) _redraw = 0; }
 
   void _events();
 };
@@ -110,3 +115,4 @@ Palette& palette();
 Font& font();
 void focus(Widget*);
 #define FOCUS_ME focus(this)
+#define UNFOCUS_ME if (app().focused == this) focus(nullptr)

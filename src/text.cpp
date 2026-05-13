@@ -3,7 +3,6 @@
 #include "app.hpp"
 #include "raylib.h"
 #include "macros.hpp"
-#include <cmath>
 #include <iostream>
 using namespace std;
 
@@ -41,7 +40,6 @@ void Text::on_double_click()
 
 void Text::update()
 {
-  println("Rect in text: {}", rect);
   Widget::update();
 }
 

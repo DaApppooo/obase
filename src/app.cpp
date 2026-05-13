@@ -3,10 +3,12 @@
 #include "raymath.h"
 #include "widget.hpp"
 #include "sys_settings.hpp"
+#include <cassert>
+#include <string_view>
 #include <unistd.h>
 
 f32 App::DOUBLE_CLICK_TIME;
-App* _obase_current_app;
+App* _obase_current_app = nullptr;
 App& app()
 {
 #ifdef _DEBUG
@@ -31,14 +33,18 @@ Font& font()
 #endif
   return _obase_current_app->palette.font;
 }
+void focus(Widget* w)
+{ app().focused = w; }
+
+
+Widget* App::request(std::string_view name)
+{
+  return _src->request(name);
+}
 
 void App::init(Own<Widget*> root)
 {
   DOUBLE_CLICK_TIME = double_click_time();
-  if (system_theme() == THEME_DARK)
-    palette = Palette::breeze_dark();
-  else
-    palette = Palette::breeze_light();
   focused = nullptr;
   _src.reset(root);
   _obase_current_app = this;
@@ -50,9 +56,17 @@ void App::run(const char* title)
   SetTargetFPS(60);
   SetConfigFlags(
     FLAG_WINDOW_RESIZABLE
+    | FLAG_MSAA_4X_HINT
   );
   InitWindow(1600, 900, title);
-  _redraw = true;
+  // The font must be loaded after alling InitWindow !!!
+  if (system_theme() == THEME_DARK)
+    palette = Palette::breeze_dark();
+  else
+    palette = Palette::breeze_light();
+  load_icons(palette.icons);
+  assert(palette.font.recs != nullptr);
+  _redraw = -5;
   IFDEBUG(bool show_debug = false;)
   while (!WindowShouldClose())
   {
@@ -65,14 +79,22 @@ void App::run(const char* title)
       _redraw = true;
     }
     )
-    if (!_redraw)
-      continue;
     BeginDrawing();
+    if (_redraw < 10)
+    {
+      _redraw++;
       ClearBackground(BLACK);
       _src->draw();
       IFDEBUG(if (show_debug) _src->debug_draw();)
+    }
     EndDrawing();
   }
+
+  UnloadFont(palette.font);
+  for (Texture& tex : palette.icons)
+    UnloadTexture(tex);
+
+  CloseWindow();
 }
 
 void App::_events()
@@ -150,9 +172,9 @@ void App::_events()
 Palette Palette::breeze_dark()
 {
   return {
-    LoadFont("res/font.ttf"),
-    16,
-    12,
+    LoadFontEx("res/font.ttf", 20, nullptr, 0),
+    30,
+    20,
     {
       rgb(32, 35, 38),
       rgb(61, 174, 233),

@@ -37,6 +37,26 @@ void Layout::draw()
   app().scissor_end(old_scissor);
 }
 
+void rescale_child(Widget &child, Rect old_rect, Rect rect)
+{
+  let rx = (child.rect.x - old_rect.x)/old_rect.width;
+  let ry = (child.rect.y - old_rect.y)/old_rect.height;
+  let rw = child.rect.width/old_rect.width;
+  let rh = child.rect.height/old_rect.height;
+
+  let nx = rx * rect.width + rect.x;
+  let ny = ry * rect.height + rect.y;
+  mut nw = rw * rect.width;
+  mut nh = rh * rect.height;
+
+  if (child.flags & W_LOCKED)
+    nw = child.rect.width;
+  if (child.flags & H_LOCKED)
+    nh = child.rect.height;
+
+  child.rect = { nx, ny, nw, nh };
+}
+
 void Layout::update()
 {
   Widget::update();
@@ -51,17 +71,7 @@ void Layout::update()
     old_rect = rect;
   for (uptr<Widget>& child : children)
   {
-    let rx = (child->rect.x - old_rect.x)/old_rect.width;
-    let ry = (child->rect.y - old_rect.y)/old_rect.height;
-    let rw = child->rect.width/old_rect.width;
-    let rh = child->rect.height/old_rect.height;
-
-    let nx = rx * rect.width + rect.x;
-    let ny = ry * rect.height + rect.y;
-    let nw = rw * rect.width;
-    let nh = rh * rect.height;
-
-    child->rect = { nx, ny, nw, nh };
+    rescale_child(*child, old_rect, rect);
     child->update();
   }
   old_rect = rect;

@@ -16,7 +16,7 @@ enum AnchorPoint
   CENTER
 };
 
-macro std::ostream& format(std::ostream& out, const AnchorPoint& p)
+FORMATTER(AnchorPoint, [](std::ostream& out, const AnchorPoint& p)
 {
   switch (p)
   {
@@ -27,8 +27,7 @@ macro std::ostream& format(std::ostream& out, const AnchorPoint& p)
     C(CENTER)
     default: out << "UNKNOWN"; break;
   }
-  return out;
-}
+});
 
 struct Anchor
 {
@@ -57,10 +56,13 @@ struct Anchor
   bool update();
 };
 
-macro std::ostream& format(std::ostream& out, const Anchor& anch)
+FORMATTER(Anchor, [](std::ostream& out, const Anchor& anch)
 {
   out << "Anchor("
       << anch.B_where << " of " << anch.B
-      << anch.A_where << " of " << 
-}
+      << " anchored on "
+      << anch.A_where << " of " << anch.A
+      << ", resizable=" << anch.B_resize
+      << ", margin=" << anch._margin << ")";
+});
 
