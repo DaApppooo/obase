@@ -1,41 +1,9 @@
+#include "toggle_button.hpp"
+#include "layout.hpp"
 #include "push_button.hpp"
-#include "app.hpp"
-#include "raylib.h"
 #include "text.hpp"
-#include <string>
 
-Color button_bg_style(ButtonState state)
-{
-  switch (state)
-  {
-    case BTN_RELEASED:
-      return palette().bg(UI_INACTIVE);
-    case BTN_HOVERED:
-      return palette().bg(UI_FOCUSED);
-    case BTN_DOWN:
-      return palette().bg(UI_ACTIVE);
-    case BTN_LOCKED:
-      return palette().bg(UI_SELECTED);
-  }
-  return BLACK;
-}
-Color button_border_style(ButtonState state)
-{
-  switch (state)
-  {
-    case BTN_RELEASED:
-      return palette().border(UI_INACTIVE);
-    case BTN_HOVERED:
-      return palette().border(UI_FOCUSED);
-    case BTN_DOWN:
-      return palette().border(UI_ACTIVE);
-    case BTN_LOCKED:
-      return palette().border(UI_ACTIVE);
-  }
-  return RED;
-}
-
-PushButton::PushButton(std::string&& id, std::function<void(MouseButton)>&& on_click)
+ToggleButton::ToggleButton(std::string&& id, std::function<void(MouseButton, bool)>&& on_click)
   : Hull(std::move(id)),
     _on_click(std::move(on_click)),
     old_state(BTN_RELEASED),
@@ -43,7 +11,7 @@ PushButton::PushButton(std::string&& id, std::function<void(MouseButton)>&& on_c
     fader()
 {}
 
-PushButton* PushButton::set_text(std::string&& txt)
+ToggleButton* ToggleButton::set_text(std::string&& txt)
 {
   add(
       (new Text(std::move(txt)))
@@ -54,13 +22,21 @@ PushButton* PushButton::set_text(std::string&& txt)
   return this;
 }
 
-PushButton* PushButton::set_on_click(std::function<void(MouseButton)>&& on_click)
+ToggleButton* ToggleButton::set_on_click(std::function<void(MouseButton, bool)>&& on_click)
 {
-  _on_click = on_click;
+  _on_click = std::move(on_click);
   return this;
 }
 
-Widget* PushButton::request(std::string_view name)
+ToggleButton* ToggleButton::add(Own<Widget*> child)
+{
+  assert(!this->child);
+  this->child.reset(child);
+  child->parent = this;
+  return this;
+}
+
+Widget* ToggleButton::request(std::string_view name)
 {
   if (!child)
     return nullptr;
@@ -69,9 +45,11 @@ Widget* PushButton::request(std::string_view name)
   return child->request(name);
 }
 
-void PushButton::on_click(MouseButton btn)
+void ToggleButton::on_click(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
+    return;
+  if (state == BTN_LOCKED)
     return;
   set_state(BTN_DOWN);
   app().redraw();
@@ -79,7 +57,7 @@ void PushButton::on_click(MouseButton btn)
   FOCUS_ME;
 }
 
-void PushButton::on_hover()
+void ToggleButton::on_hover()
 {
   if (state == BTN_RELEASED)
   {
@@ -87,7 +65,7 @@ void PushButton::on_hover()
     set_state(BTN_HOVERED);
   }
 }
-void PushButton::on_leave()
+void ToggleButton::on_leave()
 {
   if (state == BTN_HOVERED)
   {
@@ -96,16 +74,19 @@ void PushButton::on_leave()
   }
 }
 
-void PushButton::on_release(MouseButton btn)
+void ToggleButton::on_release(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
-  if (state != BTN_DOWN)
+  if (state != BTN_DOWN && state != BTN_LOCKED)
     return;
   if (CheckCollisionPointRec(GetMousePosition(), rect))
   {
-    _on_click(btn);
-    set_state(BTN_HOVERED);
+    _on_click(btn, state == BTN_LOCKED);
+    if (state == BTN_DOWN)
+      set_state(BTN_LOCKED);
+    else
+      set_state(BTN_HOVERED);
   }
   else
     set_state(BTN_RELEASED);
@@ -113,14 +94,26 @@ void PushButton::on_release(MouseButton btn)
   UNFOCUS_ME;
 }
 
-void PushButton::debug_draw()
+void ToggleButton::update()
+{
+  if (child)
+  {
+    rescale_child(*child, old_rect, rect);
+    child->update();
+    fit_child(*this, *child, 5.f);
+  }
+  Widget::update();
+  old_rect = rect;
+}
+
+void ToggleButton::debug_draw()
 {
   Widget::debug_draw();
   if (child)
     child->debug_draw();
 }
 
-void PushButton::draw()
+void ToggleButton::draw()
 {
   macro i32 segments = 8;
   macro f32 thickness = 1.f;
@@ -146,5 +139,8 @@ void PushButton::draw()
     child->draw();
 }
 
-PushButton::~PushButton() {}
+ToggleButton::~ToggleButton() {}
+
+
+
 

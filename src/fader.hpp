@@ -4,7 +4,7 @@
 
 struct BaseFader
 {
-  static macro f32 animation_time_scale = 100.f;
+  static macro f32 animation_time_scale = 10.f;
   // The animation will take 1 * animation_time_scale seconds to finish.
   f32 where;
   BaseFader()

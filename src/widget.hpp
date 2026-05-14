@@ -27,6 +27,7 @@ struct Widget
   std::string _name;
   Rect rect;
   WidgetFlag flags;
+  u32 anchor_p;
 
   Widget(std::string&& name);
 
@@ -50,22 +51,147 @@ struct Widget
   inline f32 right(f32 v) { return x(v-w()); }
   inline f32 bottom(f32 v) { return y(v-h()); }
 
+  inline Anchor& push_anchor()
+  { assert(anchor_p < 4); return anchors[anchor_p++]; }
   inline Widget* set_size(Vec2 wh)
   { rect.width = wh.x; rect.height = wh.y; return this; }
   inline Widget* place(Rect rect_) { rect = rect_; return this; }
   inline Widget* place(f32 x, f32 y, f32 w, f32 h) { return place({x,y,w,h}); }
-
+  inline Widget* size(Vec2 size) { w(size.x); h(size.y); return this; }
+  inline Widget* size(f32 w, f32 h) { size({w, h}); return this; }
+  inline Widget* size(f32 side) { size({side, side}); return this; }
+  
   inline Widget* fill_parent(float inset = 0.f)
   {
-    anchors[0].anchor(this, TOP_LEFT).on(parent, TOP_LEFT).resizable()
+    push_anchor().anchor(this, TOP_LEFT).on(parent, TOP_LEFT).resizable()
       .margin(inset);
-    anchors[1].anchor(this, BOTTOM_RIGHT).on(parent, BOTTOM_RIGHT).resizable()
+    push_anchor().anchor(this, BOTTOM_RIGHT).on(parent, BOTTOM_RIGHT).resizable()
       .margin(inset);
     return this;
   }
   inline Widget* center_in_parent()
   {
-    anchors[0].anchor(this, CENTER).on(parent, CENTER);
+    push_anchor().anchor(this, CENTER).on(parent, CENTER);
+    return this;
+  }
+  
+  // PUT NEXT TO OTHER
+  inline Widget* put_under(Widget* other, AnchorPoint align, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, TOP).on(other, BOTTOM).margin(margin);
+    push_anchor().anchor(this, align).on(other, align);
+    return this;
+  }
+  inline Widget* put_above(Widget* other, AnchorPoint align, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, BOTTOM).on(other, TOP).margin(margin);
+    push_anchor().anchor(this, align).on(other, align);
+    return this;
+  }
+  inline Widget* left_of(Widget* other, AnchorPoint align, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, RIGHT).on(other, LEFT).margin(margin);
+    push_anchor().anchor(this, align).on(other, align);
+    return this;
+  }
+  inline Widget* right_of(Widget* other, AnchorPoint align, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, LEFT).on(other, RIGHT).margin(margin);
+    push_anchor().anchor(this, align).on(other, align);
+    return this;
+  }
+  
+  // PUT INSIDE OTHER
+  inline Widget* top_in(Widget* other, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, TOP).on(other, TOP).margin(margin);
+    return this;
+  }
+  inline Widget* bottom_in(Widget* other, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, BOTTOM).on(other, BOTTOM).margin(margin);
+    return this;
+  }
+  inline Widget* left_in(Widget* other, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, LEFT).on(other, LEFT).margin(margin);
+    return this;
+  }
+  inline Widget* right_in(Widget* other, f32 margin = 0)
+  {
+    assert(other);
+    push_anchor().anchor(this, RIGHT).on(other, RIGHT).margin(margin);
+    return this;
+  }
+  
+  inline Widget* between_x(Widget* left, Widget* right, f32 margin = 0)
+  {
+    assert(left);
+    assert(right);
+    push_anchor()
+      .anchor(this, LEFT)
+      .on(left, RIGHT)
+      .margin(margin)
+      .resizable();
+    push_anchor()
+      .anchor(this, RIGHT)
+      .on(right, LEFT)
+      .margin(margin)
+      .resizable();
+    return this;
+  }
+  inline Widget* between_y(Widget* under, Widget* above, f32 margin = 0)
+  {
+    assert(under);
+    assert(above);
+    push_anchor()
+      .anchor(this, TOP)
+      .on(above, BOTTOM)
+      .margin(margin)
+      .resizable();
+    push_anchor()
+      .anchor(this, BOTTOM)
+      .on(under, TOP)
+      .margin(margin)
+      .resizable();
+    return this;
+  }
+  inline Widget* between(
+    Widget* left, Widget* right,
+    Widget* under, Widget* above,
+    f32 margin = 0
+  ) {
+    assert(under);
+    assert(above);
+    push_anchor()
+      .anchor(this, TOP)
+      .on(above, BOTTOM)
+      .margin(margin)
+      .resizable();
+    push_anchor()
+      .anchor(this, BOTTOM)
+      .on(under, TOP)
+      .margin(margin)
+      .resizable();
+    assert(left);
+    assert(right);
+    push_anchor()
+      .anchor(this, LEFT)
+      .on(left, RIGHT)
+      .margin(margin)
+      .resizable();
+    push_anchor()
+      .anchor(this, RIGHT)
+      .on(right, LEFT)
+      .margin(margin)
+      .resizable();
     return this;
   }
   
@@ -77,6 +203,8 @@ struct Widget
 
   // Called when the mouse buttons are up and the mouse is over the rect.
   virtual void on_hover();
+  // Called when the mouse buttons are up and the mouse was over the rect.
+  virtual void on_leave();
   // Called when a mouse button was just pressed and the mouse is over the rect.
   virtual void on_click(MouseButton);
   // Called when a double click was done with the mouse is over the rect.

@@ -88,6 +88,27 @@ void Text::draw()
       assert(!"Unexpected branch.");
   }
   DrawTextEx(font(), _text.c_str(), pos, palette().text_size, SPACING, palette().text);
+  let text_rect = Rect{pos.x, pos.y, measure.x, measure.y};
+  // Make sure the rect at least fits the text.
+  if (
+     rect.x > text_rect.x
+  or rect.y > text_rect.y
+  or rect.x + rect.width < text_rect.x + text_rect.width
+  or rect.y + rect.height < text_rect.y + text_rect.height
+  ) {
+    let text_center = Vec2{
+      text_rect.x+text_rect.width/2.f,
+      text_rect.y+text_rect.height/2.f
+    };
+    let size = Vec2{
+      text_rect.width,
+      text_rect.height
+    };
+    rect.x = text_center.x - size.x/2.f;
+    rect.y = text_center.y - size.y/2.f;
+    rect.width = size.x;
+    rect.height = size.y;
+  }
 }
 
 Text::~Text() {}

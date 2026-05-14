@@ -7,7 +7,8 @@ struct Layout : Widget
 {
   std::vector<uptr<Widget>> children;
   Rect old_rect;
-  f32 gap; // gap between children
+  f32 padding;
+  
 
   Layout(std::string&& name);
 
@@ -15,8 +16,8 @@ struct Layout : Widget
     requires (std::convertible_to<Elements*, Widget*> && ...)
   Layout* add(Own<Elements*>... elements);
 
-  inline Layout* set_gap(f32 x) { gap = x; return this; }
-  
+  inline Layout* fit_to_child(f32 padding = 5.f)
+  { this->padding = padding; return this; }
   Widget* request(std::string_view name) override;
     
   void on_hover() override;
@@ -43,6 +44,8 @@ Layout* Layout::add(Own<Elements*>... elements)
   return this;
 }
 
+void fit_child(Widget& self, Widget& child, f32 margin);
+void fit_children(Widget& self, std::span<uptr<Widget>> children, f32 margin);
 void rescale_child(Widget& child, Rect old_rect, Rect rect);
 
 

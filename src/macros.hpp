@@ -95,7 +95,6 @@ FORMATTER(Rect, [](std::ostream& out, const Rect& r)
       << r.y << ", "
       << r.width << ", "
       << r.height << ")";
-  return out;
 });
 
 FORMATTER(Vec2, [](std::ostream& out, const Vec2& r)
@@ -103,7 +102,6 @@ FORMATTER(Vec2, [](std::ostream& out, const Vec2& r)
   out << "Vec2("
       << r.x << ", "
       << r.y << ")";
-  return out;
 });
 
 inline void __consteval_fail() {}

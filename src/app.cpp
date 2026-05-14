@@ -3,6 +3,7 @@
 #include "raymath.h"
 #include "widget.hpp"
 #include "sys_settings.hpp"
+#include "rlgl.h"
 #include <cassert>
 #include <string_view>
 #include <unistd.h>
@@ -83,7 +84,7 @@ void App::run(const char* title)
     if (_redraw < 10)
     {
       _redraw++;
-      ClearBackground(BLACK);
+      ClearBackground(palette.bg(UI_ACTIVE));
       _src->draw();
       IFDEBUG(if (show_debug) _src->debug_draw();)
     }
@@ -143,11 +144,12 @@ void App::_events()
       focused->on_drag(MOUSE_BUTTON_RIGHT);
     if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
       focused->on_drag(MOUSE_BUTTON_MIDDLE);
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
       focused->on_release(MOUSE_BUTTON_LEFT);
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
       focused->on_release(MOUSE_BUTTON_RIGHT);
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
+    if (IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE))
       focused->on_release(MOUSE_BUTTON_MIDDLE);
     
     int key;
@@ -199,4 +201,6 @@ Palette Palette::breeze_light()
   assert(!"TODO");
   return {};
 }
+
+
 

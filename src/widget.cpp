@@ -11,7 +11,8 @@ Widget::Widget(std::string&& name)
     parent(nullptr),
     _name(std::move(name)),
     rect(0, 0, 0, 0),
-    flags(0)
+    flags(0),
+    anchor_p(0)
 {}
 
 void Widget::debug_draw()
@@ -28,6 +29,7 @@ Widget* Widget::request(std::string_view name)
 { return nullptr; }
 
 void Widget::on_click(MouseButton) {}
+void Widget::on_leave() {}
 void Widget::on_hover() {}
 void Widget::on_scroll() {}
 void Widget::on_double_click() {}

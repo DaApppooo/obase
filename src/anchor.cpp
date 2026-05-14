@@ -1,13 +1,16 @@
 #include "anchor.hpp"
 #include "widget.hpp"
 #include <cassert>
-
-
+#include <cmath>
 
 bool Anchor::update()
 {
   if (A == nullptr || B == nullptr)
     return false;
+  if (isnanf(B->rect.width) || isnanf(B->rect.height))
+  {
+    B->rect = { 0, 0, 10, 10 };
+  }
   bool changed = false;
   if (A_where < TWO_POINT_ANCHOR_LIMIT)
   {
@@ -15,10 +18,10 @@ bool Anchor::update()
     f32 v;
     switch (A_where)
     {
-      case LEFT: v = A->left() + _margin; break;
-      case RIGHT: v = A->right() - _margin; break;
-      case TOP: v = A->top() + _margin; break;
-      case BOTTOM: v = A->bottom() - _margin; break;
+      case LEFT: v = A->left() - _margin; break;
+      case RIGHT: v = A->right() + _margin; break;
+      case TOP: v = A->top() - _margin; break;
+      case BOTTOM: v = A->bottom() + _margin; break;
       case CENTER_X: v = A->x()+A->w()/2.f; break;
       case CENTER_Y: v = A->y()+A->h()/2.f; break;
       default:

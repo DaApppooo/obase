@@ -15,6 +15,8 @@ set(SRC
   src/widget.cpp
   src/text.cpp
   src/push_button.cpp
+  src/toggle_button.cpp
+  src/hull.cpp
   src/sys_settings.cpp
 )
 

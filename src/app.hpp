@@ -20,7 +20,6 @@ enum UIState
   UI_STATE_COUNT
 };
 
-
 inline void fit_rect_inside(Rect& fit_me, Rect inside_me)
 {
   if (fit_me.x < inside_me.x)

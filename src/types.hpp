@@ -37,6 +37,16 @@ constexpr Color operator * (float x, Color c)
 constexpr Color operator + (Color a, Color b)
 { return { u8(a.r+b.r), u8(a.g+b.g), u8(a.b+b.b), u8(a.a+b.a) }; }
 
+constexpr Rect reduce(Rect r, f32 red)
+{
+  return {
+    r.x + red,
+    r.y + red,
+    r.width - red*2.f,
+    r.height - red*2.f
+  };
+}
+
 template <class... Ts>
 struct TypeSet
 {
