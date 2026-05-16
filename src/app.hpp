@@ -42,6 +42,7 @@ struct Palette
 {
   Font font;
   u32 largest_digit_w;
+  u32 dot_w;
   u32 title_size;
   u32 text_size;
   Color _bg[UI_STATE_COUNT];

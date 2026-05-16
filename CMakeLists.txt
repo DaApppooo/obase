@@ -19,6 +19,8 @@ set(SRC
   src/hull.cpp
   src/flexbox.cpp
   src/knob.cpp
+  src/numbox.cpp
+  src/slider.cpp
   src/sys_settings.cpp
 )
 

@@ -9,13 +9,16 @@
 - FlexBox
 - Knob
 
+# Doing
+
+- NumBox
+- Slider
+
 # Todo
 
 - ToggleIcon : ToggleButton (widget that goes through 2 different icons when you click on it)
 - HelpBox
-- NumBox
 - ItemList
-- Slider
 - ScrollBar
 - ResizableScrollbar
 - Menu

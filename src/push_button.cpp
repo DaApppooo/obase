@@ -28,9 +28,9 @@ Color button_border_style(ButtonState state)
     case BTN_HOVERED:
       return palette().border(UI_FOCUSED);
     case BTN_DOWN:
-      return palette().border(UI_ACTIVE);
+      return palette().border(UI_FOCUSED);
     case BTN_LOCKED:
-      return palette().border(UI_ACTIVE);
+      return palette().border(UI_FOCUSED);
   }
   return RED;
 }

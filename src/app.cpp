@@ -40,6 +40,8 @@ void focus(Widget* w)
 
 Widget* App::request(std::string_view name)
 {
+  if (_src->_name == name)
+    return _src.get();
   return _src->request(name);
 }
 
@@ -67,9 +69,11 @@ void App::run(const char* title)
     palette = Palette::breeze_light();
   load_icons(palette.icons);
   palette.compute_largest_digit();
+  SetTextureFilter(palette.font.texture, TEXTURE_FILTER_TRILINEAR);
   assert(palette.font.recs != nullptr);
   _redraw = -5;
   IFDEBUG(bool show_debug = false;)
+  
   while (!WindowShouldClose())
   {
     _events();
@@ -176,9 +180,10 @@ Palette Palette::breeze_dark()
 {
   return {
     LoadFontEx("res/font.ttf", 20, nullptr, 0),
+    0,
+    0,
     30,
     20,
-    0,
     {
       rgb(32, 35, 38),
       rgb(61, 174, 233),
@@ -190,7 +195,7 @@ Palette Palette::breeze_dark()
       rgb(76,82,89),
       rgb(61,174,233),
       rgb(11, 12, 13),
-      rgb(61,174,233),
+      rgb(106,112,119),
       rgb(61,174,233)
     },
     WHITE,
@@ -213,6 +218,7 @@ void Palette::compute_largest_digit()
     if (size > largest_digit_w)
       largest_digit_w = size;
   }
+  dot_w = MeasureTextEx(font, ".", text_size, 2.f).x;
 }
 
 
