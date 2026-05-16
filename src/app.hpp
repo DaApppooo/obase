@@ -41,6 +41,7 @@ inline void fit_rect_inside(Rect& fit_me, Rect inside_me)
 struct Palette
 {
   Font font;
+  u32 largest_digit_w;
   u32 title_size;
   u32 text_size;
   Color _bg[UI_STATE_COUNT];
@@ -56,6 +57,8 @@ struct Palette
   inline Color border(UIState state) { return _border[state]; }
   inline Color bg(UIState state) { return _bg[state]; }
 
+  void compute_largest_digit();
+  
   void draw_text(std::string_view v, Vec2 pos);
   void draw_text_selected(std::string_view v, Vec2 pos);
   void draw_text(const char* v, Vec2 pos);

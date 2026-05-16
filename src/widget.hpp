@@ -20,6 +20,8 @@ enum Orientation
   VERTICAL
 };
 
+std::string indexed_id(std::string&& id, size_t index);
+
 struct Widget
 {
   Anchor anchors[4];
@@ -39,8 +41,20 @@ struct Widget
   inline f32 h() const { return rect.height; }
   inline f32 x(float v) { return rect.x = v; }
   inline f32 y(float v) { return rect.y = v; }
-  inline f32 w(float v) { return rect.width = v; }
-  inline f32 h(float v) { return rect.height = v; }
+  inline f32 w(float v)
+  {
+    if (flags & W_LOCKED)
+      return rect.width;
+    else
+      return rect.width = v;
+  }
+  inline f32 h(float v)
+  {
+    if (flags & H_LOCKED)
+      return rect.height;
+    else
+      return rect.height = v;
+  }
   
   inline f32 left() const { return x(); }
   inline f32 top() const { return y(); }
@@ -52,14 +66,20 @@ struct Widget
   inline f32 bottom(f32 v) { return y(v-h()); }
 
   inline Anchor& push_anchor()
-  { assert(anchor_p < 4); return anchors[anchor_p++]; }
-  inline Widget* set_size(Vec2 wh)
-  { rect.width = wh.x; rect.height = wh.y; return this; }
+  {
+    assert(anchor_p < 4);
+    return anchors[anchor_p++];
+  }
   inline Widget* place(Rect rect_) { rect = rect_; return this; }
   inline Widget* place(f32 x, f32 y, f32 w, f32 h) { return place({x,y,w,h}); }
-  inline Widget* size(Vec2 size) { w(size.x); h(size.y); return this; }
+  inline Widget* size(Vec2 size)
+  { w(size.x); h(size.y); flags |= W_LOCKED | H_LOCKED; return this; }
   inline Widget* size(f32 w, f32 h) { size({w, h}); return this; }
   inline Widget* size(f32 side) { size({side, side}); return this; }
+  inline Widget* unlock_width()
+  { flags &= ~W_LOCKED; return this; }
+  inline Widget* unlock_height()
+  { flags &= ~H_LOCKED; return this; }
   
   inline Widget* fill_parent(float inset = 0.f)
   {
@@ -106,28 +126,36 @@ struct Widget
   }
   
   // PUT INSIDE OTHER
-  inline Widget* top_in(Widget* other, f32 margin = 0)
+  inline Widget* top_in(Widget* other, f32 margin = 0, bool resize = false)
   {
     assert(other);
     push_anchor().anchor(this, TOP).on(other, TOP).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
     return this;
   }
-  inline Widget* bottom_in(Widget* other, f32 margin = 0)
+  inline Widget* bottom_in(Widget* other, f32 margin = 0, bool resize = false)
   {
     assert(other);
     push_anchor().anchor(this, BOTTOM).on(other, BOTTOM).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
     return this;
   }
-  inline Widget* left_in(Widget* other, f32 margin = 0)
+  inline Widget* left_in(Widget* other, f32 margin = 0, bool resize = false)
   {
     assert(other);
     push_anchor().anchor(this, LEFT).on(other, LEFT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
     return this;
   }
-  inline Widget* right_in(Widget* other, f32 margin = 0)
+  inline Widget* right_in(Widget* other, f32 margin = 0, bool resize = false)
   {
     assert(other);
     push_anchor().anchor(this, RIGHT).on(other, RIGHT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
     return this;
   }
   
@@ -219,7 +247,10 @@ struct Widget
   virtual void on_keydown(KeyboardKey key);
   // Called when the widget is focused (if focusable) and a key just got released.
   virtual void on_keyup(KeyboardKey key);
-  
+
+  // When focused, can be called when the HelpBox object is drawn.
+  // Write information about this plugin into the out stream.
+  virtual void help(std::ostream& out);
   // Called only when redrawing is necessary.
   // To ask for a redraw you can use app().redraw()
   virtual void draw() = 0;

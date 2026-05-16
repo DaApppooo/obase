@@ -66,6 +66,7 @@ void App::run(const char* title)
   else
     palette = Palette::breeze_light();
   load_icons(palette.icons);
+  palette.compute_largest_digit();
   assert(palette.font.recs != nullptr);
   _redraw = -5;
   IFDEBUG(bool show_debug = false;)
@@ -84,7 +85,7 @@ void App::run(const char* title)
     if (_redraw < 10)
     {
       _redraw++;
-      ClearBackground(palette.bg(UI_ACTIVE));
+      ClearBackground(ColorBrightness(palette.bg(UI_ACTIVE), -0.1f));
       _src->draw();
       IFDEBUG(if (show_debug) _src->debug_draw();)
     }
@@ -177,6 +178,7 @@ Palette Palette::breeze_dark()
     LoadFontEx("res/font.ttf", 20, nullptr, 0),
     30,
     20,
+    0,
     {
       rgb(32, 35, 38),
       rgb(61, 174, 233),
@@ -187,7 +189,7 @@ Palette Palette::breeze_dark()
     {
       rgb(76,82,89),
       rgb(61,174,233),
-      rgb(61,174,233),
+      rgb(11, 12, 13),
       rgb(61,174,233),
       rgb(61,174,233)
     },
@@ -202,5 +204,15 @@ Palette Palette::breeze_light()
   return {};
 }
 
+void Palette::compute_largest_digit()
+{
+  const char* digits[] = {"0","1","2","3","4","5","6","7","8","9"};
+  for (const char* s : digits)
+  {
+    let size = MeasureTextEx(font, s, text_size, 2.f).x;
+    if (size > largest_digit_w)
+      largest_digit_w = size;
+  }
+}
 
 

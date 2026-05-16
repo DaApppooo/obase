@@ -1,10 +1,22 @@
 #include "widget.hpp"
 #include <cmath>
 #include <cstddef>
+#include <ostream>
 #include "macros.hpp"
 #include "raylib.h"
 #include "types.hpp"
 #include "app.hpp"
+
+std::string indexed_id(std::string&& id, size_t index)
+{
+  id.resize(id.size()+8);
+  std::copy(
+    (i8*)&index,
+    8+(i8*)&index,
+    (&id.back())-8
+  );
+  return std::move(id);
+}
 
 Widget::Widget(std::string&& name)
   : anchors{Anchor(), Anchor(), Anchor(), Anchor()},
@@ -37,6 +49,11 @@ void Widget::on_drag(MouseButton) {}
 void Widget::on_release(MouseButton) {}
 void Widget::on_keydown(KeyboardKey) {}
 void Widget::on_keyup(KeyboardKey) {}
+
+void Widget::help(std::ostream& out)
+{
+  out << "This widget doesn't give out any information.";
+}
 
 void Widget::update()
 {

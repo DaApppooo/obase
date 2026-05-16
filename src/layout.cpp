@@ -3,11 +3,12 @@
 #include "raylib.h"
 #include "widget.hpp"
 #include "raymath.h"
+#include <iostream>
 
 Layout::Layout(std::string&& name)
   : Widget(std::move(name)),
     children(),
-    gap(0)
+    padding(-1.f)
 {}
 
 Widget* Layout::request(std::string_view name)
@@ -32,7 +33,7 @@ void Layout::debug_draw()
 
 void Layout::draw()
 {
-  let old_scissor = app().scissor_begin(rect);
+  let old_scissor = app().scissor_begin(reduce(rect, -10.f));
   for (uptr<Widget>& w : children)
     w->draw();
   app().scissor_end(old_scissor);
@@ -53,6 +54,17 @@ void fit_children(Widget &self, std::span<uptr<Widget>> children, f32 margin)
   Rectangle fit = self.rect;
   for (uptr<Widget>& w: children)
   {
+    // update margins to avoid moving objects
+    for (Anchor& c : w->anchors)
+    {
+      if (
+         c.match(w.get(), LEFT, &self, LEFT)
+      or c.match(w.get(), RIGHT, &self, RIGHT)
+      or c.match(w.get(), TOP, &self, TOP)
+      or c.match(w.get(), BOTTOM, &self, BOTTOM)
+      )
+        c.margin(margin);
+    }
     if (isnanf(fit.x))
       fit.x = w->x();
     else if (w->x() < fit.x)
@@ -124,7 +136,8 @@ void Layout::update()
     rescale_child(*child, old_rect, rect);
     child->update();
   }
-  fit_children(*this, children, padding);
+  if (padding >= 0.f)
+    fit_children(*this, children, padding);
   old_rect = rect;
 }
 
@@ -134,8 +147,9 @@ Layout::~Layout()
 #define PASS_ON_MOUSE(METH, BTN_T, NAME) \
 void Layout::METH(BTN_T NAME) \
 { \
-  for (uptr<Widget>& w : children) \
+  for (size_t i = 0; i < children.size(); i++) \
   { \
+    mut& w = children[i]; \
     if (CheckCollisionPointRec(GetMousePosition(), w->rect)) \
       w->METH(NAME); \
   } \
@@ -145,11 +159,15 @@ void Layout::on_hover()
 {
   let mpo = GetMousePosition();
   let old_mpo = mpo - GetMouseDelta();
+  // let old_old_mpo = mpo - GetMouseDelta()*2.f;
   for (uptr<Widget>& w : children)
   {
     if (CheckCollisionPointRec(mpo, w->rect))
       w->on_hover();
-    else if (CheckCollisionPointRec(old_mpo, w->rect))
+    else if (
+       CheckCollisionPointRec(old_mpo, w->rect)
+    // or CheckCollisionPointRec(old_old_mpo, w->rect)
+    )
       w->on_leave();
   }
 }
@@ -158,3 +176,32 @@ PASS_ON_MOUSE(on_double_click,,);
 PASS_ON_MOUSE(on_click, MouseButton, btn);
 PASS_ON_MOUSE(on_drag, MouseButton, btn);
 PASS_ON_MOUSE(on_release, MouseButton, btn);
+
+Layout* Layout::insert(size_t index, Own<Widget*> elem)
+{
+  children.insert(children.begin()+index, uptr<Widget>(elem));
+  return this;
+}
+
+Layout* Layout::remove(size_t index)
+{
+  children.erase(children.begin()+index);
+  return this;
+}
+
+Layout* Layout::remove(std::string_view name)
+{
+  for (size_t i = 0; i < children.size(); i++)
+  {
+    if (children[i]->_name == name)
+    {
+      children.erase(children.begin()+i);
+      return this;
+    }
+  }
+  std::cerr << "Layout doesn't contain child named " << name << '\n';
+  return this;
+}
+
+
+

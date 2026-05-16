@@ -24,7 +24,7 @@ Color button_border_style(ButtonState state)
   switch (state)
   {
     case BTN_RELEASED:
-      return palette().border(UI_INACTIVE);
+      return palette().border(UI_DEFAULT);
     case BTN_HOVERED:
       return palette().border(UI_FOCUSED);
     case BTN_DOWN:
@@ -37,10 +37,7 @@ Color button_border_style(ButtonState state)
 
 PushButton::PushButton(std::string&& id, std::function<void(MouseButton)>&& on_click)
   : Hull(std::move(id)),
-    _on_click(std::move(on_click)),
-    old_state(BTN_RELEASED),
-    state(BTN_RELEASED),
-    fader()
+    _on_click(std::move(on_click))
 {}
 
 PushButton* PushButton::set_text(std::string&& txt)
@@ -73,7 +70,7 @@ void PushButton::on_click(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
-  set_state(BTN_DOWN);
+  style.set_state(BTN_DOWN);
   app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   FOCUS_ME;
@@ -81,18 +78,18 @@ void PushButton::on_click(MouseButton btn)
 
 void PushButton::on_hover()
 {
-  if (state == BTN_RELEASED)
+  if (style.state() == BTN_RELEASED)
   {
     app().redraw();
-    set_state(BTN_HOVERED);
+    style.set_state(BTN_HOVERED);
   }
 }
 void PushButton::on_leave()
 {
-  if (state == BTN_HOVERED)
+  if (style.state() == BTN_HOVERED)
   {
     app().redraw();
-    set_state(BTN_RELEASED);
+    style.set_state(BTN_RELEASED);
   }
 }
 
@@ -100,15 +97,16 @@ void PushButton::on_release(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
-  if (state != BTN_DOWN)
+  if (style.state() != BTN_DOWN)
     return;
   if (CheckCollisionPointRec(GetMousePosition(), rect))
   {
-    _on_click(btn);
-    set_state(BTN_HOVERED);
+    if (_on_click)
+      _on_click(btn);
+    style.set_state(BTN_HOVERED);
   }
   else
-    set_state(BTN_RELEASED);
+    style.set_state(BTN_RELEASED);
   app().redraw();
   UNFOCUS_ME;
 }
@@ -130,18 +128,17 @@ void PushButton::draw()
     style.roundness_left,
     style.roundness_right,
     segments,
-    fader.get(button_border_style(old_state), button_border_style(state))
+    style.border()
   );
   DrawRectangleRoundedPro(
     rect,
     style.roundness_left,
     style.roundness_right,
     segments,
-    fader.get(button_bg_style(old_state), button_bg_style(state))
+    style.bg()
   );
-  if (fader.update(GetFrameTime()))
+  if (style.update(GetFrameTime()))
     app().redraw();
-  assert(child);
   if (child)
     child->draw();
 }

@@ -1,4 +1,6 @@
 #include "app.hpp"
+#include "flexbox.hpp"
+#include "knob.hpp"
 #include "layout.hpp"
 #include "push_button.hpp"
 #include "toggle_button.hpp"
@@ -10,21 +12,35 @@ int main()
   app.init(
     (new Layout("window"))
     ->add(
-      (new ToggleButton("btn"))
-      ->set_text("Click me !")
-      ->set_on_click([](MouseButton, bool){println("Helloooo !");})
-      ->place(0, 0, 100, 30)
-      ->add_flag(W_LOCKED)
-      ->add_flag(H_LOCKED),
-      (new PushButton("btn2"))
-      ->set_text("Push button !")
-      ->set_on_click([](MouseButton){println("Hi !!!");})
-      ->add_flag(W_LOCKED | H_LOCKED)
-      ->place(0, 0, 100, 30)
+      (new FlexBox("menu"))
+      ->set_margin(5.f)
+      ->set_padding(5.f)
+      ->add(
+        (new PushButton("+"))
+        ->set_text("+")
+        ->set_on_click([&app](MouseButton){
+            println("A");
+            mut* box = static_cast<FlexBox*>(app.request("menu"));
+            box->add(
+              (new PushButton("yay"))
+              ->set_text("yay")
+            );
+            box->update();
+          })
+        ->size(40),
+        (new ToggleButton("B"))
+        ->set_text("B")
+        ->set_on_click([](MouseButton, bool x){println("B is {}", x);})
+        ->size(40),
+        (new Knob("knob"))
+        ->add_dent(0.8f)
+        ->size(50, 50)
+      )
+      ->size(200.f, 50.f)
+      ->unlock_width()
     )
   );
-  app.request("btn")->center_in_parent();
-  app.request("btn2")->put_under(app.request("btn"), CENTER_X, 5.f);
+  app.request("menu")->center_in_parent();
 
   app.run("obase test");
   return 0;

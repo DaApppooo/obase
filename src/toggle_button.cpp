@@ -1,14 +1,10 @@
 #include "toggle_button.hpp"
-#include "layout.hpp"
 #include "push_button.hpp"
 #include "text.hpp"
 
 ToggleButton::ToggleButton(std::string&& id, std::function<void(MouseButton, bool)>&& on_click)
   : Hull(std::move(id)),
-    _on_click(std::move(on_click)),
-    old_state(BTN_RELEASED),
-    state(BTN_RELEASED),
-    fader()
+    _on_click(std::move(on_click))
 {}
 
 ToggleButton* ToggleButton::set_text(std::string&& txt)
@@ -49,9 +45,9 @@ void ToggleButton::on_click(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
-  if (state == BTN_LOCKED)
+  if (style.state() == BTN_LOCKED)
     return;
-  set_state(BTN_DOWN);
+  style.set_state(BTN_DOWN);
   app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   FOCUS_ME;
@@ -59,18 +55,18 @@ void ToggleButton::on_click(MouseButton btn)
 
 void ToggleButton::on_hover()
 {
-  if (state == BTN_RELEASED)
+  if (style.state() == BTN_RELEASED)
   {
     app().redraw();
-    set_state(BTN_HOVERED);
+    style.set_state(BTN_HOVERED);
   }
 }
 void ToggleButton::on_leave()
 {
-  if (state == BTN_HOVERED)
+  if (style.state() == BTN_HOVERED)
   {
     app().redraw();
-    set_state(BTN_RELEASED);
+    style.set_state(BTN_RELEASED);
   }
 }
 
@@ -78,32 +74,21 @@ void ToggleButton::on_release(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
-  if (state != BTN_DOWN && state != BTN_LOCKED)
+  if (style.state() != BTN_DOWN && style.state() != BTN_LOCKED)
     return;
   if (CheckCollisionPointRec(GetMousePosition(), rect))
   {
-    _on_click(btn, state == BTN_LOCKED);
-    if (state == BTN_DOWN)
-      set_state(BTN_LOCKED);
+    if (_on_click)
+      _on_click(btn, style.state() == BTN_LOCKED);
+    if (style.state() == BTN_DOWN)
+      style.set_state(BTN_LOCKED);
     else
-      set_state(BTN_HOVERED);
+      style.set_state(BTN_HOVERED);
   }
   else
-    set_state(BTN_RELEASED);
+    style.set_state(BTN_RELEASED);
   app().redraw();
   UNFOCUS_ME;
-}
-
-void ToggleButton::update()
-{
-  if (child)
-  {
-    rescale_child(*child, old_rect, rect);
-    child->update();
-    fit_child(*this, *child, 5.f);
-  }
-  Widget::update();
-  old_rect = rect;
 }
 
 void ToggleButton::debug_draw()
@@ -123,16 +108,16 @@ void ToggleButton::draw()
     style.roundness_left,
     style.roundness_right,
     segments,
-    fader.get(button_border_style(old_state), button_border_style(state))
+    style.border()
   );
   DrawRectangleRoundedPro(
     rect,
     style.roundness_left,
     style.roundness_right,
     segments,
-    fader.get(button_bg_style(old_state), button_bg_style(state))
+    style.bg()
   );
-  if (fader.update(GetFrameTime()))
+  if (style.update(GetFrameTime()))
     app().redraw();
   assert(child);
   if (child)

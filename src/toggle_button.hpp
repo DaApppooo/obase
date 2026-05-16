@@ -1,5 +1,4 @@
 #pragma once
-#include "fader.hpp"
 #include "raylib.h"
 #include "widget.hpp"
 #include <functional>
@@ -13,9 +12,6 @@ struct ToggleButton : Hull
 {
   std::function<void(MouseButton, bool)> _on_click;
   ButtonStyle style;
-  ButtonState old_state;
-  ButtonState state;
-  BaseFader fader;
   
   ToggleButton(
     std::string&& id,
@@ -24,8 +20,6 @@ struct ToggleButton : Hull
 
   ToggleButton* set_on_click(std::function<void(MouseButton, bool)>&& on_click);
   ToggleButton* add(Own<Widget*> child);
-
-  inline void set_state(ButtonState new_state);
 
   ToggleButton* set_text(std::string&& txt);
   // void set_icon()
@@ -37,17 +31,6 @@ struct ToggleButton : Hull
   void on_release(MouseButton) override;
 
   void debug_draw() override;
-  void update() override;
   void draw() override;
   ~ToggleButton() override;
 };
-
-inline void ToggleButton::set_state(ButtonState new_state)
-{
-  if (new_state == state)
-    return;
-  fader.set();
-  old_state = state;
-  state = new_state;
-}
-

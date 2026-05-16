@@ -18,6 +18,10 @@ struct Hull : Widget
   }
   inline Hull* fit_to_child(f32 padding = 5.f)
   { this->padding = padding; return this; }
+  inline Hull* size(Vec2 size)
+  { w(size.x); h(size.y); flags |= W_LOCKED | H_LOCKED; padding = -1.f; return this; }
+  inline Hull* size(f32 w, f32 h) { size({w, h}); return this; }
+  inline Hull* size(f32 side) { size({side, side}); return this; }
   
   void update() override;
   ~Hull() override;

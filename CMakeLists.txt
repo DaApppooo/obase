@@ -17,6 +17,8 @@ set(SRC
   src/push_button.cpp
   src/toggle_button.cpp
   src/hull.cpp
+  src/flexbox.cpp
+  src/knob.cpp
   src/sys_settings.cpp
 )
 

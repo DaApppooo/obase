@@ -1,0 +1,30 @@
+
+# Done
+
+- Widget
+- Layout
+- Hull (like a layout except it hols only one item)
+- PushButton
+- ToggleButton
+- FlexBox
+- Knob
+
+# Todo
+
+- ToggleIcon : ToggleButton (widget that goes through 2 different icons when you click on it)
+- HelpBox
+- NumBox
+- ItemList
+- Slider
+- ScrollBar
+- ResizableScrollbar
+- Menu
+	- MenuEntry
+- Panel (window with snap function, close, fill space, reduce and a set of tools symbolized by icons)
+	- PanelTool
+- ContextMenu<T> (menu that appears when you right click)
+- EditableTextBox
+- MonoTextBox : EditableTextBox
+- MultiTextBox : EditableTextBox
+- GraphicsBox (box that's redrawn about 60 times a second)
+

@@ -1,6 +1,7 @@
 #pragma once
 #include "widget.hpp"
 #include <concepts>
+#include <string_view>
 #include <vector>
 
 struct Layout : Widget
@@ -8,13 +9,16 @@ struct Layout : Widget
   std::vector<uptr<Widget>> children;
   Rect old_rect;
   f32 padding;
-  
 
   Layout(std::string&& name);
 
   template <class... Elements>
     requires (std::convertible_to<Elements*, Widget*> && ...)
   Layout* add(Own<Elements*>... elements);
+
+  virtual Layout* insert(size_t index, Own<Widget*> elem);
+  virtual Layout* remove(size_t index);
+  virtual Layout* remove(std::string_view name);
 
   inline Layout* fit_to_child(f32 padding = 5.f)
   { this->padding = padding; return this; }

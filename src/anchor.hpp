@@ -20,11 +20,11 @@ FORMATTER(AnchorPoint, [](std::ostream& out, const AnchorPoint& p)
 {
   switch (p)
   {
-#define C(NAME) case NAME: out << #NAME; break;
-    C(LEFT) C(RIGHT) C(TOP) C(BOTTOM)
-    C(CENTER_X) C(CENTER_Y)
-    C(TOP_LEFT) C(TOP_RIGHT) C(BOTTOM_LEFT) C(BOTTOM_RIGHT)
-    C(CENTER)
+#define ESTR(NAME) case NAME: out << #NAME; break;
+    ESTR(LEFT) ESTR(RIGHT) ESTR(TOP) ESTR(BOTTOM)
+    ESTR(CENTER_X) ESTR(CENTER_Y)
+    ESTR(TOP_LEFT) ESTR(TOP_RIGHT) ESTR(BOTTOM_LEFT) ESTR(BOTTOM_RIGHT)
+    ESTR(CENTER)
     default: out << "UNKNOWN"; break;
   }
 });
@@ -51,10 +51,26 @@ struct Anchor
   { A = who; A_where = where; return *this; }
   inline Anchor& resizable() { B_resize = true; return *this; }
   inline Anchor& margin(f32 m) { _margin = m; return *this; }
+  inline bool match(
+    Widget* who, AnchorPoint where,
+    Widget* anchored_to_who, AnchorPoint to_where
+  ) const;
 
   // Returns true if the size of who's anchored changed.
   bool update();
 };
+
+inline bool Anchor::match(
+  Widget* who, AnchorPoint where,
+  Widget* anchored_to_who, AnchorPoint to_where
+) const {
+  return (
+      who == B
+  and where == B_where
+  and anchored_to_who == A
+  and to_where == A_where
+  );
+}
 
 FORMATTER(Anchor, [](std::ostream& out, const Anchor& anch)
 {
