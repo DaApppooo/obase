@@ -23,6 +23,21 @@ struct Layout : Widget
   inline Layout* fit_to_child(f32 padding = 5.f)
   { this->padding = padding; return this; }
   Widget* request(std::string_view name) override;
+
+  template <class Func>
+  inline Layout* map(Func&& f)
+  {
+    for (mut& child : children)
+      f(child.get());
+    return this;
+  }
+  template <class Func, class Buffer>
+  inline Layout* fetch_into(Func&& f, Buffer&& buffer)
+  {
+    for (mut& child : children)
+      buffer << f(child.get());
+    return this;
+  }
     
   void on_hover() override;
   void on_click(MouseButton) override;

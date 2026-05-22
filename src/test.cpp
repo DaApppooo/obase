@@ -1,7 +1,9 @@
 #include "app.hpp"
+#include "context_menu.hpp"
 #include "flexbox.hpp"
 #include "knob.hpp"
 #include "layout.hpp"
+#include "menu.hpp"
 #include "numbox.hpp"
 #include "push_button.hpp"
 #include "toggle_button.hpp"
@@ -49,15 +51,17 @@ int main()
       )
       ->size(200.f, 50.f)
       ->unlock_width(),
-      (new Slider("vertical_slider"))
-      ->add_dent(0.8)
-      ->orient(VERTICAL)
-      ->size(30, 200)
+      make_menu_button("FILES", "FILES")
+      ->size(50.f)
     )
   );
   app.request("menu")->center_in_parent();
-  app.request("vertical_slider")->top_in(app.request("window"));
-  app.request("vertical_slider")->left_in(app.request("window"));
+  // app.request("vertical_slider")->top_in(app.request("window"));
+  // app.request("vertical_slider")->left_in(app.request("window"));
+  app.request("FILES.menu")->as<Menu>()
+    ->entry("save", []{ println("Saving..."); })
+    ->entry("save as", []{ println("Saving as..."); })
+    ->entry("open", []{ println("Opening..."); });
 
   app.run("obase test");
   return 0;

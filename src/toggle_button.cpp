@@ -91,15 +91,10 @@ void ToggleButton::on_release(MouseButton btn)
   UNFOCUS_ME;
 }
 
-void ToggleButton::debug_draw()
-{
-  Widget::debug_draw();
-  if (child)
-    child->debug_draw();
-}
-
 void ToggleButton::draw()
 {
+  if (!visible())
+    return;
   macro i32 segments = 8;
   macro f32 thickness = 1.f;
   
@@ -119,9 +114,7 @@ void ToggleButton::draw()
   );
   if (style.update(GetFrameTime()))
     app().redraw();
-  assert(child);
-  if (child)
-    child->draw();
+  Hull::draw();
 }
 
 ToggleButton::~ToggleButton() {}

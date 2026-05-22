@@ -10,33 +10,28 @@
 
 f32 App::DOUBLE_CLICK_TIME;
 App* _obase_current_app = nullptr;
-App& app()
-{
-#ifdef _DEBUG
-  if (!_obase_current_app)
-    assert(!"You forgot to initialize your app.");
-#endif
-  return *_obase_current_app;
-}
-Palette& palette()
-{
-#ifdef _DEBUG
-  if (!_obase_current_app)
-    assert(!"You forgot to initialize your app.");
-#endif
-  return _obase_current_app->palette;
-}
-Font& font()
-{
-#ifdef _DEBUG
-  if (!_obase_current_app)
-    assert(!"You forgot to initialize your app.");
-#endif
-  return _obase_current_app->palette.font;
-}
-void focus(Widget* w)
-{ app().focused = w; }
 
+void focus(Widget *w)
+{
+  if (app().focused)
+  {
+    if (w)
+    {
+      Widget* p = w->parent;
+      while (p != nullptr)
+      {
+        if (p == app().focused)
+          break;
+        p = p->parent;
+      }
+      if (p == nullptr)
+        app().focused->on_unfocus();
+    }
+    else
+      app().focused->on_unfocus();
+  }
+  app().focused = w;
+}
 
 Widget* App::request(std::string_view name)
 {
@@ -105,13 +100,21 @@ void App::run(const char* title)
 
 void App::_events()
 {
-#define BTN_FUNC(BTN, RL, FUNC) \
-  if (IsMouseButton##RL(MOUSE_BUTTON_##BTN)) \
-    _src->FUNC(MOUSE_BUTTON_##BTN)
+#define GENERAL_BTN_FUNC(PTR, BTN, RL, FUNC) \
+  if (PTR && IsMouseButton##RL(MOUSE_BUTTON_##BTN)) \
+    PTR->FUNC(MOUSE_BUTTON_##BTN)
+#define BTN_FUNC(BTN, RL, FUNC) GENERAL_BTN_FUNC(src, BTN, RL, FUNC)
+#define FOCUS_BTN_FUNC(BTN, RL, FUNC) GENERAL_BTN_FUNC(focused, BTN, RL, FUNC)
 #define BTNS(RL, FUNC) \
   BTN_FUNC(LEFT, RL, FUNC); \
   BTN_FUNC(RIGHT, RL, FUNC); \
   BTN_FUNC(MIDDLE, RL, FUNC)
+#define FOCUSED_BTNS(RL, FUNC) \
+  FOCUS_BTN_FUNC(LEFT, RL, FUNC); \
+  FOCUS_BTN_FUNC(RIGHT, RL, FUNC); \
+  FOCUS_BTN_FUNC(MIDDLE, RL, FUNC)
+  // tell the compiler, hey, the pointer won't change between calls:
+  Widget* const src = _src.get();
   BTNS(Pressed, on_click);
   BTNS(Down, on_drag);
   BTNS(Released, on_release);
@@ -143,19 +146,28 @@ void App::_events()
 
   if (focused)
   {
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-      focused->on_drag(MOUSE_BUTTON_LEFT);
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-      focused->on_drag(MOUSE_BUTTON_RIGHT);
-    if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE))
-      focused->on_drag(MOUSE_BUTTON_MIDDLE);
+    // focused however can change !
+    FOCUSED_BTNS(Pressed, on_click);
+    FOCUSED_BTNS(Down, on_drag);
+    FOCUSED_BTNS(Released, on_release);
+    if (focused && CheckCollisionPointRec(mpo, focused->rect))
+    {
+      if (delta.x != 0 || delta.y != 0)
+      {
+        focused->on_hover();
+      }
+      if (
+          IsMouseButtonPressed(MOUSE_BUTTON_LEFT)
+      and double_click_timer <= DOUBLE_CLICK_TIME
+      and Vector2Distance(double_click_loc, mpo) < DOUBLE_CLICK_MAX_DIST
+      ) {
+        focused->on_double_click();
+        double_click_timer = 1000.f;
+      }
+    }
 
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-      focused->on_release(MOUSE_BUTTON_LEFT);
-    if (IsMouseButtonReleased(MOUSE_BUTTON_RIGHT))
-      focused->on_release(MOUSE_BUTTON_RIGHT);
-    if (IsMouseButtonReleased(MOUSE_BUTTON_MIDDLE))
-      focused->on_release(MOUSE_BUTTON_MIDDLE);
+    if (!focused)
+      return;
     
     int key;
     while ((key = GetKeyPressed()))

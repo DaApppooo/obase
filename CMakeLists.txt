@@ -21,6 +21,7 @@ set(SRC
   src/knob.cpp
   src/numbox.cpp
   src/slider.cpp
+  src/menu.cpp
   src/sys_settings.cpp
 )
 

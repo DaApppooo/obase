@@ -22,7 +22,22 @@ struct Hull : Widget
   { w(size.x); h(size.y); flags |= W_LOCKED | H_LOCKED; padding = -1.f; return this; }
   inline Hull* size(f32 w, f32 h) { size({w, h}); return this; }
   inline Hull* size(f32 side) { size({side, side}); return this; }
+
+  template <class Func>
+  inline Hull* map(Func&& f)
+  {
+    f(child.get());
+    return this;
+  }
+  template <class Func>
+  inline auto fetch(Func&& f)
+  {
+    return f(child.get());
+  }
   
+  Widget* request(std::string_view name) override;
+  void draw() override;
+  void debug_draw() override;
   void update() override;
   ~Hull() override;
 };

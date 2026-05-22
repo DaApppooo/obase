@@ -26,7 +26,6 @@ void NumBox::on_click(MouseButton btn)
   if (rel_mpo <= padding or rel_mpo >= w()-padding)
     return;
   _pow_sel = digit_power(rel_mpo);
-  println("POW SEL: {}", _pow_sel);
 }
 
 void NumBox::on_scroll()
@@ -38,7 +37,6 @@ void NumBox::on_scroll()
   i32 power = digit_power(rel_mpo);
   _x += delta*std::pow(10.0, power);
   _x = std::clamp(_x, min, max);
-  println("NEW VALUE: {}", _x);
   app().redraw();
 }
 
@@ -51,7 +49,6 @@ void NumBox::on_drag(MouseButton btn)
   let delta = GetMouseDelta();
   _x += (delta.x-delta.y)/50.0*std::pow(10.0, _pow_sel);
   _x = std::clamp(_x, min, max);
-  println("NEW VALUE: {}", _x);
   app().redraw();
 }
 

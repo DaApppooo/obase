@@ -1,5 +1,6 @@
 #include "push_button.hpp"
 #include "app.hpp"
+#include "hull.hpp"
 #include "raylib.h"
 #include "text.hpp"
 #include <string>
@@ -111,15 +112,10 @@ void PushButton::on_release(MouseButton btn)
   UNFOCUS_ME;
 }
 
-void PushButton::debug_draw()
-{
-  Widget::debug_draw();
-  if (child)
-    child->debug_draw();
-}
-
 void PushButton::draw()
 {
+  if (!visible())
+    return;
   macro i32 segments = 8;
   macro f32 thickness = 1.f;
   
@@ -139,8 +135,7 @@ void PushButton::draw()
   );
   if (style.update(GetFrameTime()))
     app().redraw();
-  if (child)
-    child->draw();
+  Hull::draw();
 }
 
 PushButton::~PushButton() {}

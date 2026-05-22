@@ -8,11 +8,14 @@
 - ToggleButton
 - FlexBox
 - Knob
+- NumBox
+- Slider
+- Menu
+	- MenuEntry [*]
 
 # Doing
 
-- NumBox
-- Slider
+- ContextMenu<T> (menu that appears when you right click) [*]
 
 # Todo
 
@@ -21,11 +24,8 @@
 - ItemList
 - ScrollBar
 - ResizableScrollbar
-- Menu
-	- MenuEntry
 - Panel (window with snap function, close, fill space, reduce and a set of tools symbolized by icons)
 	- PanelTool
-- ContextMenu<T> (menu that appears when you right click)
 - EditableTextBox
 - MonoTextBox : EditableTextBox
 - MultiTextBox : EditableTextBox

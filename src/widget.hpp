@@ -13,6 +13,8 @@ macro WidgetFlag X_RESIZABLE = 0b0000100;
 // The widget can be resized by the user in the Y direction
 macro WidgetFlag Y_RESIZABLE = 0b0001000;
 
+template <class T>
+struct ContextMenu;
 
 enum Orientation
 {
@@ -28,11 +30,14 @@ struct Widget
   Widget* parent;
   std::string _name;
   Rect rect;
-  WidgetFlag flags;
   u32 anchor_p;
+  WidgetFlag flags : sizeof(WidgetFlag)-1;
+  bool _visible : 1;
+  
 
   Widget(std::string&& name);
 
+  inline bool visible() const { return _visible; }
   inline Widget* add_flag(WidgetFlag flag) { flags |= flag; return this; }
 
   inline f32 x() const { return rect.x; }
@@ -43,6 +48,7 @@ struct Widget
   inline f32 y(float v) { return rect.y = v; }
   inline f32 w(float v)
   {
+    assert(_name == "window" || v != 1600);
     if (flags & W_LOCKED)
       return rect.width;
     else
@@ -80,6 +86,9 @@ struct Widget
   { flags &= ~W_LOCKED; return this; }
   inline Widget* unlock_height()
   { flags &= ~H_LOCKED; return this; }
+  [[nodiscard]]
+  inline bool is(std::string_view name_)
+  { return _name == name_; }
   
   inline Widget* fill_parent(float inset = 0.f)
   {
@@ -222,7 +231,27 @@ struct Widget
       .resizable();
     return this;
   }
-  
+
+  template <class T, class Func>
+  inline Widget* if_is(Func&& func)
+  {
+    mut* ptr = dynamic_cast<T*>(this);
+    if (ptr)
+      func(ptr);
+    return this;
+  }
+  template <class T>
+  inline T* as()
+  {
+#ifdef _DEBUG
+    let ptr = dynamic_cast<T*>(this);
+    if (!ptr)
+      assert(!"Wrong type cast !");
+    return ptr;
+#else
+  return static_cast<T*>(this);
+#endif
+  }
   
   // Search for a child named 'name'. If not found, returns nullptr.
   virtual Widget* request(std::string_view name);
@@ -247,6 +276,13 @@ struct Widget
   virtual void on_keydown(KeyboardKey key);
   // Called when the widget is focused (if focusable) and a key just got released.
   virtual void on_keyup(KeyboardKey key);
+  // Called when the widget was focused.
+  virtual void on_unfocus();
+
+  virtual void hide();
+  virtual void show();
+  inline void show(bool x)
+  { if (x) show(); else hide(); }
 
   // When focused, can be called when the HelpBox object is drawn.
   // Write information about this plugin into the out stream.

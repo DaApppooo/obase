@@ -101,7 +101,6 @@ struct PushButton : Hull
   void on_leave() override;
   void on_release(MouseButton) override;
 
-  void debug_draw() override;
   void draw() override;
   ~PushButton() override;
 };

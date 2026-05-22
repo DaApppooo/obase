@@ -93,11 +93,12 @@ struct App
 
   Widget* request(std::string_view name);
 
-  inline Rect scissor_begin(Rect new_scissor)
+  inline Rect scissor_begin(Rect new_scissor, bool fit_inside_previous = true)
   {
     Rect temp = current_scissor;
     EndScissorMode();
-    fit_rect_inside(new_scissor, current_scissor);
+    if (fit_inside_previous)
+      fit_rect_inside(new_scissor, current_scissor);
     current_scissor = new_scissor;
     BeginScissorMode(EXPAND_RECT(new_scissor));
     return temp;
@@ -113,9 +114,24 @@ struct App
   void _events();
 };
 
-App& app();
-Palette& palette();
-Font& font();
-void focus(Widget*);
+inline App& app()
+{
+  extern App* _obase_current_app;
+#ifdef _DEBUG
+  if (!_obase_current_app)
+    assert(!"You forgot to initialize your app.");
+#endif
+  return *_obase_current_app;
+}
+inline Palette& palette()
+{ return app().palette; }
+inline Font& font()
+{ return app().palette.font; }
+void focus(Widget* w);
+inline void unfocus(Widget* w)
+{ if (app().focused == w) focus(nullptr); }
+// Checks whether the given widget is focused or not.
+[[nodiscard]] inline bool is_focused(Widget* w)
+{ return app().focused == w; }
 #define FOCUS_ME focus(this)
-#define UNFOCUS_ME if (app().focused == this) focus(nullptr)
+#define UNFOCUS_ME unfocus(this)

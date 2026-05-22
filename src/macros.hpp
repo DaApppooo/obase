@@ -57,6 +57,10 @@ inline macro T* alloc(T* p, u32 s)
     return (T*)malloc(sizeof(T)*s);
 }
 
+template <class T>
+macro std::vector<T>& operator << (std::vector<T>& vec, T&& val)
+{ vec.push_back(val); return vec; }
+
 macro size_t str_len_s(const char* s)
 { size_t c = 0; if (!s) return c; while (*s) { c++; s++; }; return c; }
 

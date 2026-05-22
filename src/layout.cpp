@@ -33,6 +33,8 @@ void Layout::debug_draw()
 
 void Layout::draw()
 {
+  if (!_visible)
+    return;
   let old_scissor = app().scissor_begin(reduce(rect, -10.f));
   for (uptr<Widget>& w : children)
     w->draw();
@@ -147,6 +149,8 @@ Layout::~Layout()
 #define PASS_ON_MOUSE(METH, BTN_T, NAME) \
 void Layout::METH(BTN_T NAME) \
 { \
+  if (!_visible) \
+    return; \
   for (size_t i = 0; i < children.size(); i++) \
   { \
     mut& w = children[i]; \
@@ -157,6 +161,8 @@ void Layout::METH(BTN_T NAME) \
 
 void Layout::on_hover()
 {
+  if (!_visible)
+    return;
   let mpo = GetMousePosition();
   let old_mpo = mpo - GetMouseDelta();
   // let old_old_mpo = mpo - GetMouseDelta()*2.f;

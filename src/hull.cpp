@@ -1,6 +1,7 @@
 #include "hull.hpp"
 #include "layout.hpp"
 #include "widget.hpp"
+#include <string_view>
 
 Hull::Hull(std::string&& id)
   : Widget(std::move(id)),
@@ -8,6 +9,28 @@ Hull::Hull(std::string&& id)
     old_rect(0, 0, 1, 1),
     padding(-1)
 {}
+
+void Hull::debug_draw()
+{
+  Widget::debug_draw();
+  if (child)
+    child->debug_draw();
+}
+
+Widget* Hull::request(std::string_view name)
+{
+  if (child->_name == name)
+    return child.get();
+  return child->request(name);
+}
+
+void Hull::draw()
+{
+  if (!visible())
+    return;
+  if (child)
+    child->draw();
+}
 
 void Hull::update()
 {
