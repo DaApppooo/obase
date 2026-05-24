@@ -47,6 +47,8 @@ void ToggleButton::on_click(MouseButton btn)
     return;
   if (style.state() == BTN_LOCKED)
     return;
+  if (app().focused)
+    return;
   style.set_state(BTN_DOWN);
   app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object

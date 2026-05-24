@@ -12,14 +12,14 @@
 - Slider
 - Menu
 	- MenuEntry [*]
+- ContextMenu<T> (menu that appears when you right click) [*]
 
 # Doing
 
-- ContextMenu<T> (menu that appears when you right click) [*]
+- ToggleIcon : ToggleButton (widget that goes through 2 different icons when you click on it)
 
 # Todo
 
-- ToggleIcon : ToggleButton (widget that goes through 2 different icons when you click on it)
 - HelpBox
 - ItemList
 - ScrollBar

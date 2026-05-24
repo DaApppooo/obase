@@ -5,6 +5,7 @@
 #pragma once
 
 #include "raylib.h"
+
 enum Theme
 {
   THEME_DARK,
@@ -43,4 +44,11 @@ inline void DrawRectangleRoundedPro(
                                 color, color);
 }
 
-
+Image load_svg_to_img(const char *path, int w, int h);
+inline Texture load_svg(const char* path, int w, int h)
+{
+  Image img = load_svg_to_img(path, w, h);
+  Texture tex = LoadTextureFromImage(img);
+  UnloadImage(img);
+  return tex;
+}

@@ -8,6 +8,7 @@ struct Hull : Widget
   f32 padding;
 
   Hull(std::string&& id);
+  Hull(Hull&&) = default;
 
   inline Hull* add(Own<Widget*> child)
   {

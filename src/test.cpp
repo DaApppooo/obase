@@ -7,6 +7,7 @@
 #include "numbox.hpp"
 #include "push_button.hpp"
 #include "toggle_button.hpp"
+#include "toggle_icon.hpp"
 #include "widget.hpp"
 #include "slider.hpp"
 
@@ -32,10 +33,13 @@ int main()
             box->update();
           })
         ->size(40),
-        (new ToggleButton("B"))
-        ->set_text("B")
-        ->set_on_click([](MouseButton, bool x){println("B is {}", x);})
-        ->size(40),
+        (new ContextMenu(ToggleButton("B")))
+        ->map([](ToggleButton* self){
+          self
+          ->set_text("B")
+          ->set_on_click([](MouseButton, bool x){println("B is {}", x);})
+          ->size(40);
+        }),
         (new Knob("knob"))
         ->add_dent(0.8f)
         ->size(50, 50),
@@ -47,7 +51,9 @@ int main()
         (new Slider("MySlider"))
         ->dent(8)
         ->orient(HORIZONTAL)
-        ->size(200, 30)
+        ->size(200, 30),
+        (new ToggleIcon("C", [](MouseButton, bool){ println("byebye"); }))
+        ->size(50, 50)
       )
       ->size(200.f, 50.f)
       ->unlock_width(),
@@ -62,7 +68,15 @@ int main()
     ->entry("save", []{ println("Saving..."); })
     ->entry("save as", []{ println("Saving as..."); })
     ->entry("open", []{ println("Opening..."); });
+  app.request("B.context_menu")->as<Menu>()
+    ->entry("Turn on", [self=app.request("B")]{ self->as<ToggleButton>()->turn_on(); })
+    ->entry("Turn off", [self=app.request("B")]{ self->as<ToggleButton>()->turn_off(); });
+  app.request("FILES")
+    ->topleft_in(app.request("window"), 10.f);
+  focus(app.request("B"));
 
+  
+  
   app.run("obase test");
   return 0;
 }

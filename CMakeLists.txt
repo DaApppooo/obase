@@ -23,6 +23,7 @@ set(SRC
   src/slider.cpp
   src/menu.cpp
   src/sys_settings.cpp
+  src/toggle_icon.cpp
 )
 
 add_executable(test

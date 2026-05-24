@@ -86,6 +86,8 @@ void App::run(const char* title)
       _redraw++;
       ClearBackground(ColorBrightness(palette.bg(UI_ACTIVE), -0.1f));
       _src->draw();
+      if (focused)
+        focused->draw(); // redraw focused over everything. not ideal but it works
       IFDEBUG(if (show_debug) _src->debug_draw();)
     }
     EndDrawing();

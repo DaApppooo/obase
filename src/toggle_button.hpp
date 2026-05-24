@@ -18,6 +18,13 @@ struct ToggleButton : Hull
     std::function<void(MouseButton, bool down)>&& on_click = nullptr
   );
 
+  ToggleButton(ToggleButton&&) = default;
+
+  inline void turn(bool state);
+  inline void turn_on() { turn(true); }
+  inline void turn_off() { turn(false); }
+  inline bool is_on() const { return style.base.state == BTN_LOCKED; }
+
   ToggleButton* set_on_click(std::function<void(MouseButton, bool)>&& on_click);
   ToggleButton* add(Own<Widget*> child);
 
@@ -33,3 +40,6 @@ struct ToggleButton : Hull
   void draw() override;
   ~ToggleButton() override;
 };
+
+inline void ToggleButton::turn(bool state)
+{ style.base.state = state ? BTN_LOCKED : BTN_RELEASED; }

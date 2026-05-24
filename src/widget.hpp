@@ -24,8 +24,9 @@ enum Orientation
 
 std::string indexed_id(std::string&& id, size_t index);
 
+
 struct Widget
-{
+{  
   Anchor anchors[4];
   Widget* parent;
   std::string _name;
@@ -34,8 +35,8 @@ struct Widget
   WidgetFlag flags : sizeof(WidgetFlag)-1;
   bool _visible : 1;
   
-
   Widget(std::string&& name);
+  Widget(Widget&&) = default;
 
   inline bool visible() const { return _visible; }
   inline Widget* add_flag(WidgetFlag flag) { flags |= flag; return this; }
@@ -163,6 +164,38 @@ struct Widget
   {
     assert(other);
     push_anchor().anchor(this, RIGHT).on(other, RIGHT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
+    return this;
+  }
+  inline Widget* topleft_in(Widget* other, f32 margin = 0, bool resize = false)
+  {
+    assert(other);
+    push_anchor().anchor(this, TOP_LEFT).on(other, TOP_LEFT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
+    return this;
+  }
+  inline Widget* topright_in(Widget* other, f32 margin = 0, bool resize = false)
+  {
+    assert(other);
+    push_anchor().anchor(this, TOP_RIGHT).on(other, TOP_RIGHT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
+    return this;
+  }
+  inline Widget* bottomleft_in(Widget* other, f32 margin = 0, bool resize = false)
+  {
+    assert(other);
+    push_anchor().anchor(this, BOTTOM_LEFT).on(other, BOTTOM_LEFT).margin(margin);
+    if (resize)
+      anchors[anchor_p-1].resizable();
+    return this;
+  }
+  inline Widget* bottomright_in(Widget* other, f32 margin = 0, bool resize = false)
+  {
+    assert(other);
+    push_anchor().anchor(this, BOTTOM_RIGHT).on(other, BOTTOM_RIGHT).margin(margin);
     if (resize)
       anchors[anchor_p-1].resizable();
     return this;

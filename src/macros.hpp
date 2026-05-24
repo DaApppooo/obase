@@ -115,6 +115,16 @@ using std::println;
 template <class T>
 using generator = std::generator<T>;
 
+template <class Sig>
+struct FuncSig;
+
+template <class R, class C, class... A>
+struct FuncSig<R(C::*)(A...)>
+{
+  using rtype = R;
+  using method_of = C;
+};
+
 static macro struct _DefaultType
 {
   using Self = _DefaultType;

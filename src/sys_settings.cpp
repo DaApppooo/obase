@@ -3,6 +3,11 @@
 #include "rlgl.h"
 #include <cmath>
 
+#define NANOSVG_IMPLEMENTATION
+#include "nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "nanosvgrast.h"
+
 // Comment this line to use system settings:
 #define TEST_OVERRIDE
 
@@ -14,7 +19,7 @@ Theme system_theme()
 { return THEME_DARK; }
 void load_icons(IconBuffer& buf)
 {
-  buf[CROSS] = LoadTexture("res/cross.png");
+  buf[CROSS] = load_svg("res/close-outline.svg", 128, 128);
 }
 
 #else
@@ -25,6 +30,76 @@ void load_icons(IconBuffer& buf)
 #endif
 #endif
 
+// modified version of the raylib example for svgs
+// (modified only to fit better the overall programming style)
+Image load_svg_to_img(const char *path, int w, int h)
+{
+  Image image = {0};
+  
+ if ((strcmp(GetFileExtension(path), ".svg") == 0) ||
+      (strcmp(GetFileExtension(path), ".SVG") == 0))
+  {
+      int dataSize = 0;
+      unsigned char *fileData = NULL;
+
+      fileData = LoadFileData(path, &dataSize);
+
+      // Make sure the file data contains an EOL character: '\0'
+      if ((dataSize > 0) && (fileData[dataSize - 1] != '\0'))
+      {
+          fileData = (unsigned char*)realloc(fileData, dataSize + 1);
+          fileData[dataSize] = '\0';
+          dataSize += 1;
+      }
+
+      // Validate fileData as valid SVG string data
+      //<svg xmlns="http://www.w3.org/2000/svg" width="2500" height="2484" viewBox="0 0 192.756 191.488">
+      if ((fileData != NULL) &&
+          (fileData[0] == '<') &&
+          (fileData[1] == 's') &&
+          (fileData[2] == 'v') &&
+          (fileData[3] == 'g'))
+      {
+        struct NSVGimage *svgImage = nsvgParse((char*)fileData, "px", 96.0f);
+        unsigned char *imgData = (unsigned char*)malloc(svgImage->width*svgImage->height*4);
+
+        // NOTE: If required w or h is 0, using default SVG internal value
+        if (w == 0) w = svgImage->width;
+        if (h == 0) h = svgImage->height;
+
+        // Calculate scales for both the w and the h
+        float scalew = w/svgImage->width;
+        float scaleh = h/svgImage->height;
+
+        // Set the largest of the 2 scales to be the scale to use
+        float scale = (scaleh > scalew)? scalew : scaleh;
+
+        int offsetX = 0;
+        int offsetY = 0;
+
+        if (scaleh > scalew) offsetY = (h - svgImage->height*scale)/2;
+        else offsetX = (w - svgImage->width*scale)/2;
+
+        // Rasterize
+        struct NSVGrasterizer *rast = nsvgCreateRasterizer();
+        nsvgRasterize(rast, svgImage, offsetX, offsetY, scale, imgData, w, h, w*4);
+
+        // Populate image struct with all data
+        image.data = imgData;
+        image.width = w;
+        image.height = h;
+        image.mipmaps = 1;
+        image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+
+        // nsvgDelete(svgImage); // can't delete coz "free(): invalid size"
+        // nsvgDeleteRasterizer(rast);
+    }
+
+    UnloadFileData(fileData);
+  }
+
+  return image;
+}
 
 void DrawRectangleRoundedGradientH(Rectangle rec, float roundnessLeft, float roundnessRight, int segments, Color left, Color right)
 {

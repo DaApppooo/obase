@@ -71,6 +71,8 @@ void PushButton::on_click(MouseButton btn)
 {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
+  if (app().focused)
+    return;
   style.set_state(BTN_DOWN);
   app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object

@@ -3,6 +3,7 @@ import os
 import pathlib
 import config
 import subprocess as subp
+import tqdm
 
 def pinfo(msg):
   print("[INFO]", msg)
@@ -137,10 +138,14 @@ def mv(src: str, dst: str, shush = False):
       for i in ls(path)
       if i.rsplit(config.SEPARATOR,1)[-1].startswith(search)
     ]
-    for src in srcs:
+    src_ = src
+    for src in tqdm.tqdm(srcs, desc=f"Moving {src_!r} to {dst!r}"):
       mv(src, dst, shush=True)
   else:
-    os.rename(src, os.path.join(dst, src.rsplit(config.SEPARATOR, 1)[-1]))
+    if os.path.isdir(dst):
+      os.rename(src, os.path.join(dst, src.rsplit(config.SEPARATOR, 1)[-1]))
+    else:
+      os.rename(src, dst)
 def ls(p: str):
     if not p:
         p = '.'
@@ -161,8 +166,10 @@ class Setup:
     self.setups = {'linux':[], 'windows':[]}
   def linux(self, f):
     self.setups['linux'].append(f)
+    return f
   def windows(self, f):
     self.setups['windows'].append(f)
+    return f
   def run(self, target: str):
     if target == 'Windows':
       arr = self.setups['windows']

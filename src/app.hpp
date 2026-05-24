@@ -135,3 +135,6 @@ inline void unfocus(Widget* w)
 { return app().focused == w; }
 #define FOCUS_ME focus(this)
 #define UNFOCUS_ME unfocus(this)
+
+#define TEX_ORIGINAL_RECT(tex) Rect{ 0.f, 0.f, f32(tex.width), f32(tex.height) }
+
