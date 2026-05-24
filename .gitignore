@@ -3,6 +3,7 @@ bin/*
 
 # Ressources
 res/*
+licenses/*
 
 # Editor stuff
 .cache/*
