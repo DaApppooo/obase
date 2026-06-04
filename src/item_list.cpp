@@ -143,12 +143,13 @@ void ItemList::update()
 
 void ItemList::draw()
 {
+  let roundness = 0.2f;
   let entry_h = (palette().text_size + 2.f*padding);
   { // opening box
     let r = Rect{x(), y(), w(), entry_h};
     let old = app().scissor_begin(r);
     DrawRoundedBox(
-      r, 0.1, 0.1, 1,
+      r, roundness, roundness, 1,
       palette().border(UI_DEFAULT),
       palette().bg(UI_DEFAULT)
     );

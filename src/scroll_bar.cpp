@@ -45,7 +45,7 @@ void ScrollBarStyle::update(const char* widget_name, Rect total)
 
 void ScrollBarStyle::draw(Rect total)
 {
-  macro f32 roundness = 0.1f;
+  macro f32 roundness = 0.2f;
   macro f32 thickness = 1.f;
   let dt = GetFrameTime();
   if (min_btn_style.update(dt))

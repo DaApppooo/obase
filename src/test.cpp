@@ -1,18 +1,9 @@
 #include "app.hpp"
-#include "context_menu.hpp"
-#include "flexbox.hpp"
 #include "item_list.hpp"
-#include "knob.hpp"
 #include "layout.hpp"
-#include "menu.hpp"
-#include "numbox.hpp"
-#include "push_button.hpp"
-#include "scroll_bar.hpp"
 #include "split_proxy.hpp"
-#include "toggle_button.hpp"
-#include "toggle_icon.hpp"
 #include "widget.hpp"
-#include "slider.hpp"
+#include "resizable_scrollbar.hpp"
 
 int main()
 {
@@ -29,9 +20,9 @@ int main()
         ->size(100.f, VARIABLE_SIZE)
       )
       ->size(100, 20),
-      (new ScrollBar("right"))
+      (new ResizableScrollBar("right"))
       ->orient(VERTICAL)
-      ->size(20, VARIABLE_SIZE),
+      ->size(40, VARIABLE_SIZE),
       (new ScrollBar("top"))
       ->orient(HORIZONTAL)
       ->size(VARIABLE_SIZE, 20)

@@ -195,6 +195,16 @@ void App::_events()
 
 void Palette::draw_icon(Icon icon, Rect fit, f32 angle, Color tint)
 {
+  if (fit.width > fit.height)
+  {
+    fit.x += (fit.width - fit.height)/2;
+    fit.width = fit.height;
+  }
+  else
+  {
+    fit.y += (fit.height - fit.width)/2;
+    fit.height = fit.width;
+  }
   let center = Vec2{fit.width/2.f, fit.height/2.f};
   DrawTexturePro(
     icons[icon],

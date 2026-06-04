@@ -88,6 +88,7 @@ struct App
   Widget* request(std::string_view name);
   inline Widget* request(const char* s) { return request(std::string_view(s)); }
 
+  [[nodiscard]]
   inline Rect scissor_begin(Rect new_scissor, bool fit_inside_previous = true)
   {
     Rect temp = current_scissor;
@@ -105,6 +106,10 @@ struct App
     BeginScissorMode(EXPAND_RECT(old_scissor));
   }
   inline void redraw() { if (_redraw > 1) _redraw = 0; }
+  inline void set_cursor(MouseCursor new_cursor)
+  {
+    SetMouseCursor(new_cursor);
+  }
 
   void _events();
 };

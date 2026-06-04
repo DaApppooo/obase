@@ -6,10 +6,10 @@ PushButton - ToggleButton - FlexBox - Knob - NumBox - Slider - Menu
 	- MenuEntry [*]
 - ContextMenu<T> (menu that appears when you right click) [*] - ScrollBar
 - ItemList
+- ResizableScrollbar
 
 # Doing
 
-- ResizableScrollbar
 
 # Todo
 
