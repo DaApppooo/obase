@@ -35,6 +35,14 @@ struct Hull : Widget
   {
     return f(child.get());
   }
+
+  void on_hover() override;
+  void on_click(MouseButton) override;
+  void on_double_click() override;
+  void on_drag(MouseButton) override;
+  void on_release(MouseButton) override;
+  void on_scroll() override;
+  void on_leave() override;
   
   Widget* request(std::string_view name) override;
   void draw() override;

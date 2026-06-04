@@ -24,6 +24,9 @@ set(SRC
   src/menu.cpp
   src/sys_settings.cpp
   src/toggle_icon.cpp
+  src/scroll_bar.cpp
+  src/item_list.cpp
+  src/split_proxy.cpp
 )
 
 add_executable(test

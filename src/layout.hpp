@@ -45,6 +45,7 @@ struct Layout : Widget
   void on_drag(MouseButton) override;
   void on_release(MouseButton) override;
   void on_scroll() override;
+  void on_leave() override;
   
   void debug_draw() override;
   void draw() override;

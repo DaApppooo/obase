@@ -36,7 +36,7 @@ Color button_border_style(ButtonState state)
   return RED;
 }
 
-PushButton::PushButton(std::string&& id, std::function<void(MouseButton)>&& on_click)
+PushButton::PushButton(std::string&& id, std::function<void()>&& on_click)
   : Hull(std::move(id)),
     _on_click(std::move(on_click))
 {}
@@ -52,7 +52,7 @@ PushButton* PushButton::set_text(std::string&& txt)
   return this;
 }
 
-PushButton* PushButton::set_on_click(std::function<void(MouseButton)>&& on_click)
+PushButton* PushButton::set_on_click(std::function<void()>&& on_click)
 {
   _on_click = on_click;
   return this;
@@ -68,50 +68,21 @@ Widget* PushButton::request(std::string_view name)
 }
 
 void PushButton::on_click(MouseButton btn)
-{
-  if (btn != MOUSE_BUTTON_LEFT)
-    return;
-  if (app().focused)
-    return;
-  style.set_state(BTN_DOWN);
-  app().redraw();
-  // button will continue to recieve events even if the cursor isn't over the object
-  FOCUS_ME;
-}
+{ style.base.on_click(this, btn); }
 
 void PushButton::on_hover()
-{
-  if (style.state() == BTN_RELEASED)
-  {
-    app().redraw();
-    style.set_state(BTN_HOVERED);
-  }
-}
+{ style.base.on_hover(); }
+
 void PushButton::on_leave()
-{
-  if (style.state() == BTN_HOVERED)
-  {
-    app().redraw();
-    style.set_state(BTN_RELEASED);
-  }
-}
+{ style.base.on_leave(); }
 
 void PushButton::on_release(MouseButton btn)
 {
-  if (btn != MOUSE_BUTTON_LEFT)
-    return;
-  if (style.state() != BTN_DOWN)
-    return;
-  if (CheckCollisionPointRec(GetMousePosition(), rect))
-  {
-    if (_on_click)
-      _on_click(btn);
-    style.set_state(BTN_HOVERED);
-  }
-  else
-    style.set_state(BTN_RELEASED);
-  app().redraw();
-  UNFOCUS_ME;
+  style.base.on_release(
+    this,
+    _on_click,
+    btn
+  );
 }
 
 void PushButton::draw()
@@ -121,19 +92,14 @@ void PushButton::draw()
   macro i32 segments = 8;
   macro f32 thickness = 1.f;
   
-  DrawRectangleRoundedPro(
-    reduce(rect, -thickness),
-    style.roundness_left,
-    style.roundness_right,
-    segments,
-    style.border()
-  );
-  DrawRectangleRoundedPro(
+  DrawRoundedBox(
     rect,
     style.roundness_left,
     style.roundness_right,
-    segments,
-    style.bg()
+    thickness,
+    style.border(),
+    style.bg(),
+    segments
   );
   if (style.update(GetFrameTime()))
     app().redraw();

@@ -5,13 +5,15 @@
 
 using WidgetFlag = u32;
 // The widget width is locked.
-macro WidgetFlag W_LOCKED    = 0b0000001;
+macro WidgetFlag W_LOCKED    = 0b0000'0000'0000'0001;
 // The widget height is locked.
-macro WidgetFlag H_LOCKED    = 0b0000010;
+macro WidgetFlag H_LOCKED    = 0b0000'0000'0000'0010;
 // The widget can be resized by the user in the X direction
-macro WidgetFlag X_RESIZABLE = 0b0000100;
+macro WidgetFlag X_RESIZABLE = 0b0000'0000'0000'0100;
 // The widget can be resized by the user in the Y direction
-macro WidgetFlag Y_RESIZABLE = 0b0001000;
+macro WidgetFlag Y_RESIZABLE = 0b0000'0000'0000'1000;
+
+macro f32 VARIABLE_SIZE = 0.f;
 
 template <class T>
 struct ContextMenu;
@@ -24,10 +26,10 @@ enum Orientation
 
 std::string indexed_id(std::string&& id, size_t index);
 
-
 struct Widget
-{  
-  Anchor anchors[4];
+{
+  static macro size_t MAX_ANCHORS = 4;
+  Anchor anchors[MAX_ANCHORS];
   Widget* parent;
   std::string _name;
   Rect rect;
@@ -49,7 +51,6 @@ struct Widget
   inline f32 y(float v) { return rect.y = v; }
   inline f32 w(float v)
   {
-    assert(_name == "window" || v != 1600);
     if (flags & W_LOCKED)
       return rect.width;
     else
@@ -80,7 +81,14 @@ struct Widget
   inline Widget* place(Rect rect_) { rect = rect_; return this; }
   inline Widget* place(f32 x, f32 y, f32 w, f32 h) { return place({x,y,w,h}); }
   inline Widget* size(Vec2 size)
-  { w(size.x); h(size.y); flags |= W_LOCKED | H_LOCKED; return this; }
+  {
+    w(size.x); h(size.y);
+    if (size.x != VARIABLE_SIZE)
+      flags |= W_LOCKED;
+    if (size.y != VARIABLE_SIZE)
+      flags |= H_LOCKED;
+    return this;
+  }
   inline Widget* size(f32 w, f32 h) { size({w, h}); return this; }
   inline Widget* size(f32 side) { size({side, side}); return this; }
   inline Widget* unlock_width()
@@ -198,6 +206,13 @@ struct Widget
     push_anchor().anchor(this, BOTTOM_RIGHT).on(other, BOTTOM_RIGHT).margin(margin);
     if (resize)
       anchors[anchor_p-1].resizable();
+    return this;
+  }
+  template <class Func>
+  inline Widget* make_anchor(Func&& f)
+  {
+    assert(anchor_p < MAX_ANCHORS);
+    anchors[anchor_p++] = f();
     return this;
   }
   

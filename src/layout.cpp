@@ -159,21 +159,30 @@ void Layout::METH(BTN_T NAME) \
   } \
 }
 
+void Layout::on_leave()
+{
+  if (!_visible)
+    return;
+  let mpo = GetMousePosition();
+  let old_mpo = mpo - GetMouseDelta();
+  for (uptr<Widget>& w : children)
+  {
+    if (CheckCollisionPointRec(old_mpo, w->rect))
+      w->on_leave();
+  }
+}
+
 void Layout::on_hover()
 {
   if (!_visible)
     return;
   let mpo = GetMousePosition();
   let old_mpo = mpo - GetMouseDelta();
-  // let old_old_mpo = mpo - GetMouseDelta()*2.f;
   for (uptr<Widget>& w : children)
   {
     if (CheckCollisionPointRec(mpo, w->rect))
       w->on_hover();
-    else if (
-       CheckCollisionPointRec(old_mpo, w->rect)
-    // or CheckCollisionPointRec(old_old_mpo, w->rect)
-    )
+    else if (CheckCollisionPointRec(old_mpo, w->rect))
       w->on_leave();
   }
 }

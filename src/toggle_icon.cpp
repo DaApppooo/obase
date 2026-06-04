@@ -1,12 +1,13 @@
 #include "toggle_icon.hpp"
 #include "app.hpp"
 #include "raylib.h"
+#include "sys_settings.hpp"
 #include "toggle_button.hpp"
 
 
-ToggleIcon::ToggleIcon(std::string&& name, std::function<void(MouseButton, bool)>&& on_click)
+ToggleIcon::ToggleIcon(std::string&& name, std::function<void(bool)>&& on_click)
   : ToggleButton(std::move(name), std::move(on_click)),
-    off_icon(CROSS), on_icon(CROSS)
+    off_icon(ICON_CLOSE), on_icon(ICON_CLOSE)
 {}
     
 void ToggleIcon::draw()

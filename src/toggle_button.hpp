@@ -10,12 +10,12 @@ Color button_border_style(ButtonState);
 
 struct ToggleButton : Hull
 {
-  std::function<void(MouseButton, bool)> _on_click;
+  std::function<void(bool)> _on_click;
   ButtonStyle style;
   
   ToggleButton(
     std::string&& id,
-    std::function<void(MouseButton, bool down)>&& on_click = nullptr
+    std::function<void(bool down)>&& on_click = nullptr
   );
 
   ToggleButton(ToggleButton&&) = default;
@@ -25,7 +25,7 @@ struct ToggleButton : Hull
   inline void turn_off() { turn(false); }
   inline bool is_on() const { return style.base.state == BTN_LOCKED; }
 
-  ToggleButton* set_on_click(std::function<void(MouseButton, bool)>&& on_click);
+  ToggleButton* set_on_click(std::function<void(bool)>&& on_click);
   ToggleButton* add(Own<Widget*> child);
 
   ToggleButton* set_text(std::string&& txt);

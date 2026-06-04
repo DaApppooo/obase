@@ -7,7 +7,7 @@ struct ToggleIcon : ToggleButton
   Icon off_icon;
   Icon on_icon;
   
-  ToggleIcon(std::string&& name, std::function<void(MouseButton, bool)>&& on_click);
+  ToggleIcon(std::string&& name, std::function<void(bool)>&& on_click);
 
   void draw() override;
   

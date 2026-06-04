@@ -1,5 +1,6 @@
 #pragma once
 #include "anchor.hpp"
+#include "app.hpp"
 #include "fader.hpp"
 #include "raylib.h"
 #include "widget.hpp"
@@ -25,7 +26,6 @@ FORMATTER(ButtonState, [](auto& out, ButtonState state)
     ESTR(BTN_LOCKED)
   }
 });
-
 
 Color button_bg_style(ButtonState);
 Color button_border_style(ButtonState);
@@ -55,6 +55,11 @@ struct BaseButtonStyle
     old_state = state;
     state = new_state;
   }
+
+  inline void on_click(Widget* self, MouseButton);
+  inline void on_hover();
+  inline void on_leave();
+  inline void on_release(Widget* self, std::function<void()> on_hover_and_release, MouseButton);
 };
 
 struct ButtonStyle
@@ -80,12 +85,12 @@ struct ButtonStyle
 
 struct PushButton : Hull
 {
-  std::function<void(MouseButton)> _on_click;
+  std::function<void()> _on_click;
   ButtonStyle style;
   
-  PushButton(std::string&& id, std::function<void(MouseButton)>&& on_click = nullptr);
+  PushButton(std::string&& id, std::function<void()>&& on_click = nullptr);
 
-  PushButton* set_on_click(std::function<void(MouseButton)>&& on_click);
+  PushButton* set_on_click(std::function<void()>&& on_click);
 
   inline PushButton* set_roundness(f32 roundness)
   { style.roundness_left = style.roundness_right = roundness; return this; }
@@ -105,4 +110,57 @@ struct PushButton : Hull
   ~PushButton() override;
 };
 
+inline void BaseButtonStyle::on_click(Widget* self, MouseButton btn)
+{
+  if (btn != MOUSE_BUTTON_LEFT)
+    return;
+  if (state == BTN_LOCKED)
+    return;
+  // if (app().focused)
+  //   return;
+  set_state(BTN_DOWN);
+  app().redraw();
+  // button will continue to recieve events even if the cursor isn't over the object
+  focus(self);
+}
+
+inline void BaseButtonStyle::on_hover()
+{
+  if (state == BTN_RELEASED)
+  {
+    app().redraw();
+    set_state(BTN_HOVERED);
+  }
+}
+
+inline void BaseButtonStyle::on_leave()
+{
+  if (state == BTN_HOVERED)
+  {
+    app().redraw();
+    set_state(BTN_RELEASED);
+  }
+}
+
+inline void BaseButtonStyle::on_release(
+  Widget* self,
+  std::function<void()> on_hover_and_release,
+  MouseButton btn
+) {
+  if (btn != MOUSE_BUTTON_LEFT)
+    return;
+  if (state != BTN_DOWN && state != BTN_LOCKED)
+    return;
+  if (CheckCollisionPointRec(GetMousePosition(), self->rect))
+  {
+    if (on_hover_and_release)
+      on_hover_and_release();
+    if (state != BTN_LOCKED)
+      set_state(BTN_HOVERED);
+  }
+  else
+    set_state(BTN_RELEASED);
+  app().redraw();
+  unfocus(self);
+}
 

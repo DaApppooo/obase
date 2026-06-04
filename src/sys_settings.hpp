@@ -14,7 +14,10 @@ enum Theme
 
 enum Icon
 {
-  CROSS,
+  ICON_CLOSE,
+  ICON_ARROW_HEAD, // points right
+  ICON_FULLSCREEN,
+  ICON_MINIMIZE,
   ICON_COUNT
 };
 using IconBuffer = Texture[ICON_COUNT];

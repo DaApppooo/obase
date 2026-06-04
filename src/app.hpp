@@ -60,14 +60,8 @@ struct Palette
 
   void compute_largest_digit();
   
-  void draw_text(std::string_view v, Vec2 pos);
-  void draw_text_selected(std::string_view v, Vec2 pos);
-  void draw_text(const char* v, Vec2 pos);
-  void draw_text_selected(const char* v, Vec2 pos);
-  void draw_title(std::string_view v, Vec2 pos);
-  void draw_title_selected(std::string_view v, Vec2 pos);
-  void draw_title(const char* v, Vec2 pos);
-  void draw_title_selected(const char* v, Vec2 pos);
+  // angle is degrees
+  void draw_icon(Icon icon, Rect fit, f32 angle, Color tint);
 };
 
 struct App
@@ -78,7 +72,7 @@ struct App
   static f32 DOUBLE_CLICK_TIME;
   std::bitset<512> _keys_pressed;
   Palette palette;
-  uptr<Widget> _src;
+  uptr<Widget> root;
   Widget* focused;
   Vec2 double_click_loc;
   f32 double_click_timer;
@@ -92,6 +86,7 @@ struct App
   void run(const char* title);
 
   Widget* request(std::string_view name);
+  inline Widget* request(const char* s) { return request(std::string_view(s)); }
 
   inline Rect scissor_begin(Rect new_scissor, bool fit_inside_previous = true)
   {
@@ -129,12 +124,37 @@ inline Font& font()
 { return app().palette.font; }
 void focus(Widget* w);
 inline void unfocus(Widget* w)
-{ if (app().focused == w) focus(nullptr); }
+{ if (!w) return; if (app().focused == w) focus(nullptr); }
 // Checks whether the given widget is focused or not.
 [[nodiscard]] inline bool is_focused(Widget* w)
 { return app().focused == w; }
 #define FOCUS_ME focus(this)
 #define UNFOCUS_ME unfocus(this)
+
+inline void DrawRoundedBox(
+  Rect outer,
+  f32 roundness_left,
+  f32 roundness_right,
+  f32 border_thickness,
+  Color border,
+  Color bg,
+  i32 segments = 8
+) {
+  DrawRectangleRoundedPro(
+    outer,
+    roundness_left,
+    roundness_right,
+    segments,
+    border
+  );
+  DrawRectangleRoundedPro(
+    reduce(outer, border_thickness),
+    roundness_left,
+    roundness_right,
+    segments,
+    bg
+  );
+}
 
 #define TEX_ORIGINAL_RECT(tex) Rect{ 0.f, 0.f, f32(tex.width), f32(tex.height) }
 

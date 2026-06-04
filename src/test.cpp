@@ -1,11 +1,14 @@
 #include "app.hpp"
 #include "context_menu.hpp"
 #include "flexbox.hpp"
+#include "item_list.hpp"
 #include "knob.hpp"
 #include "layout.hpp"
 #include "menu.hpp"
 #include "numbox.hpp"
 #include "push_button.hpp"
+#include "scroll_bar.hpp"
+#include "split_proxy.hpp"
 #include "toggle_button.hpp"
 #include "toggle_icon.hpp"
 #include "widget.hpp"
@@ -17,64 +20,39 @@ int main()
   app.init(
     (new Layout("window"))
     ->add(
-      (new FlexBox("menu"))
-      ->set_margin(5.f)
-      ->set_padding(5.f)
+      (new SplitProxy("list.proxy"))
       ->add(
-        (new PushButton("+"))
-        ->set_text("+")
-        ->set_on_click([&app](MouseButton){
-            println("A");
-            mut* box = static_cast<FlexBox*>(app.request("menu"));
-            box->add(
-              (new PushButton("yay"))
-              ->set_text("yay")
-            );
-            box->update();
-          })
-        ->size(40),
-        (new ContextMenu(ToggleButton("B")))
-        ->map([](ToggleButton* self){
-          self
-          ->set_text("B")
-          ->set_on_click([](MouseButton, bool x){println("B is {}", x);})
-          ->size(40);
-        }),
-        (new Knob("knob"))
-        ->add_dent(0.8f)
-        ->size(50, 50),
-        (new NumBox("MyNumBox"))
-        ->range(30.0, 500.0)
-        ->format(-2, 2)
-        ->size(100, 40)
-        ->unlock_width(),
-        (new Slider("MySlider"))
-        ->dent(8)
-        ->orient(HORIZONTAL)
-        ->size(200, 30),
-        (new ToggleIcon("C", [](MouseButton, bool){ println("byebye"); }))
-        ->size(50, 50)
+        (new ItemList("list"))
+        ->add("a")
+        ->add("b")
+        ->add("c")
+        ->size(100.f, VARIABLE_SIZE)
       )
-      ->size(200.f, 50.f)
-      ->unlock_width(),
-      make_menu_button("FILES", "FILES")
-      ->size(50.f)
+      ->size(100, 20),
+      (new ScrollBar("right"))
+      ->orient(VERTICAL)
+      ->size(20, VARIABLE_SIZE),
+      (new ScrollBar("top"))
+      ->orient(HORIZONTAL)
+      ->size(VARIABLE_SIZE, 20)
     )
   );
-  app.request("menu")->center_in_parent();
-  // app.request("vertical_slider")->top_in(app.request("window"));
-  // app.request("vertical_slider")->left_in(app.request("window"));
-  app.request("FILES.menu")->as<Menu>()
-    ->entry("save", []{ println("Saving..."); })
-    ->entry("save as", []{ println("Saving as..."); })
-    ->entry("open", []{ println("Opening..."); });
-  app.request("B.context_menu")->as<Menu>()
-    ->entry("Turn on", [self=app.request("B")]{ self->as<ToggleButton>()->turn_on(); })
-    ->entry("Turn off", [self=app.request("B")]{ self->as<ToggleButton>()->turn_off(); });
-  app.request("FILES")
-    ->topleft_in(app.request("window"), 10.f);
-  focus(app.request("B"));
-
+  let proxy = app.request("list.proxy")
+    ->center_in_parent();
+  app.request("list")
+    ->top_in(proxy)
+    ->left_in(proxy, 0, true)
+    ->right_in(proxy, 0, true);
+  mut right = app.request("right")
+    ->right_in(app.root.get(), 0)
+    ->top_in(app.root.get(), 0, true)
+    ->bottom_in(app.root.get(), 0, true);
+  mut top = app.request("top")
+    ->top_in(app.root.get(), 0)
+    ->left_in(app.root.get(), 0, true);
+  top->make_anchor(
+    [&]{ return Anchor().anchor(top, RIGHT).on(right, LEFT).resizable(); }
+  );
   
   
   app.run("obase test");

@@ -2,6 +2,7 @@
 #include "layout.hpp"
 #include "widget.hpp"
 #include <string_view>
+#include "raymath.h"
 
 Hull::Hull(std::string&& id)
   : Widget(std::move(id)),
@@ -46,5 +47,43 @@ void Hull::update()
   Widget::update();
   old_rect = rect;
 }
+
+#define PASS_ON_MOUSE(METH, BTN_T, NAME) \
+void Hull::METH(BTN_T NAME) \
+{ \
+  if (!_visible) \
+    return; \
+  if (CheckCollisionPointRec(GetMousePosition(), child->rect)) \
+    child->METH(NAME); \
+}
+
+void Hull::on_leave()
+{
+  if (!_visible)
+    return;
+  let mpo = GetMousePosition();
+  let old_mpo = mpo - GetMouseDelta();
+  if (CheckCollisionPointRec(old_mpo, child->rect))
+    child->on_leave();
+}
+
+void Hull::on_hover()
+{
+  if (!_visible)
+    return;
+  let mpo = GetMousePosition();
+  let old_mpo = mpo - GetMouseDelta();
+  if (CheckCollisionPointRec(mpo, child->rect))
+    child->on_hover();
+  else if (
+     CheckCollisionPointRec(old_mpo, child->rect)
+  )
+    child->on_leave();
+}
+PASS_ON_MOUSE(on_scroll,,);
+PASS_ON_MOUSE(on_double_click,,);
+PASS_ON_MOUSE(on_click, MouseButton, btn);
+PASS_ON_MOUSE(on_drag, MouseButton, btn);
+PASS_ON_MOUSE(on_release, MouseButton, btn);
 
 Hull::~Hull() {}

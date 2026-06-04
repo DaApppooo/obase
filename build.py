@@ -4,12 +4,12 @@
 from sys import argv
 import config
 import os
-from utils import (
+from pysh.pysh import (
   pinfo, pwarn, perr, has_program, need_program,
-  Setup, shell, chdir, wget, extract, archive, rm, ensure_dir,
+  ScriptSet, shell, chdir, wget, extract, archive, rm, ensure_dir,
   cp, mv, ls, lsr
 )
-setup = Setup()
+setup = ScriptSet("Setup")
 
 @setup.linux
 def raylib():

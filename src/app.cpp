@@ -4,6 +4,7 @@
 #include "widget.hpp"
 #include "sys_settings.hpp"
 #include "rlgl.h"
+#include "raymath.h"
 #include <cassert>
 #include <string_view>
 #include <unistd.h>
@@ -35,16 +36,16 @@ void focus(Widget *w)
 
 Widget* App::request(std::string_view name)
 {
-  if (_src->_name == name)
-    return _src.get();
-  return _src->request(name);
+  if (root->_name == name)
+    return root.get();
+  return root->request(name);
 }
 
 void App::init(Own<Widget*> root)
 {
   DOUBLE_CLICK_TIME = double_click_time();
   focused = nullptr;
-  _src.reset(root);
+  this->root.reset(root);
   _obase_current_app = this;
   current_scissor = {0, 0, 1600, 900};
 }
@@ -72,7 +73,7 @@ void App::run(const char* title)
   while (!WindowShouldClose())
   {
     _events();
-    _src->update();
+    root->update();
     IFDEBUG(
     if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_D))
     {
@@ -85,10 +86,10 @@ void App::run(const char* title)
     {
       _redraw++;
       ClearBackground(ColorBrightness(palette.bg(UI_ACTIVE), -0.1f));
-      _src->draw();
+      root->draw();
       if (focused)
         focused->draw(); // redraw focused over everything. not ideal but it works
-      IFDEBUG(if (show_debug) _src->debug_draw();)
+      IFDEBUG(if (show_debug) root->debug_draw();)
     }
     EndDrawing();
   }
@@ -116,21 +117,22 @@ void App::_events()
   FOCUS_BTN_FUNC(RIGHT, RL, FUNC); \
   FOCUS_BTN_FUNC(MIDDLE, RL, FUNC)
   // tell the compiler, hey, the pointer won't change between calls:
-  Widget* const src = _src.get();
+  Widget* const src = root.get();
+  Widget* const old_focus = focused;
   BTNS(Pressed, on_click);
   BTNS(Down, on_drag);
   BTNS(Released, on_release);
   let screen_w = GetScreenWidth(), screen_h = GetScreenHeight();
-  if (_src->rect.width != screen_w || _src->rect.height != screen_h)
+  if (root->rect.width != screen_w || root->rect.height != screen_h)
     redraw();
-  _src->rect = {0, 0, f32(screen_w), f32(screen_h)};
+  root->rect = {0, 0, f32(screen_w), f32(screen_h)};
   let mpo = GetMousePosition();
   if ( 
       IsMouseButtonPressed(MOUSE_BUTTON_LEFT)
   and double_click_timer <= DOUBLE_CLICK_TIME
   and Vector2Distance(double_click_loc, mpo) < DOUBLE_CLICK_MAX_DIST
   ) {
-    _src->on_double_click();
+    root->on_double_click();
     double_click_timer = 1000.f;
   }
   if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON))
@@ -141,12 +143,14 @@ void App::_events()
   double_click_timer += GetFrameTime();
   let scroll = GetMouseWheelMove();
   if (scroll != 0)
-    _src->on_scroll();
+    root->on_scroll();
   let delta = GetMouseDelta();
   if (delta.x != 0 || delta.y != 0)
-    _src->on_hover();
+    root->on_hover();
 
-  if (focused)
+  // send input to focused element, except if it's just been focused because
+  // in this case it should already have recieved inputs
+  if (focused and focused == old_focus)
   {
     // focused however can change !
     FOCUSED_BTNS(Pressed, on_click);
@@ -189,28 +193,41 @@ void App::_events()
   }
 }
 
+void Palette::draw_icon(Icon icon, Rect fit, f32 angle, Color tint)
+{
+  let center = Vec2{fit.width/2.f, fit.height/2.f};
+  DrawTexturePro(
+    icons[icon],
+    {0.f, 0.f, f32(icons[icon].width), f32(icons[icon].height)},
+    offset(fit, center),
+    center,
+    angle,
+    tint
+  );
+}
+
 #define rgb(R, G, B) {R, G, B, 255}
 Palette Palette::breeze_dark()
 {
   return {
     LoadFontEx("res/font.ttf", 20, nullptr, 0),
-    0,
-    0,
-    30,
-    20,
-    {
-      rgb(32, 35, 38),
-      rgb(61, 174, 233),
-      rgb(32, 35, 38),
-      rgb(29, 31, 34),
-      rgb(41, 44, 48)
+    0, // largest_digit_w (set automatically)
+    0, // dot_w (set automatically)
+    30, // title_size
+    20, // text_size
+    { // bg
+      rgb(32, 35, 38), // UI_DEFAULT
+      rgb(61, 174, 233), // UI_SELECTED
+      rgb(32, 35, 38), // UI_INACTIVE
+      rgb(19, 21, 24), // UI_ACTIVE
+      rgb(41, 44, 48) // UI_FOCUSED
     },
-    {
-      rgb(76,82,89),
-      rgb(61,174,233),
-      rgb(11, 12, 13),
-      rgb(106,112,119),
-      rgb(61,174,233)
+    { // border
+      rgb(76,82,89), // UI_DEFAULT
+      rgb(61,174,233), // UI_SELECTED
+      rgb(11, 12, 13), // UI_INACTIVE
+      rgb(106,112,119), // UI_ACTIVE
+      rgb(61,174,233) // UI_FOCUSED
     },
     WHITE,
     WHITE,

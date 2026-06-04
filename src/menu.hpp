@@ -70,7 +70,6 @@ struct Menu : FlexBox
       (new MenuEntry(indexed_id(std::string(_name), children.size()), std::move(text)))
       ->set_on_click(std::move(func))
     );
-    println("INSERTED {} -> {}", children.back()->_name, children.back()->rect);
     return this;
   }
   inline Menu* entry(

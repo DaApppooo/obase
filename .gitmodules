@@ -1,0 +1,3 @@
+[submodule "pysh"]
+	path = pysh
+	url = https://github.com/DaApppooo/pysh

@@ -1,5 +1,6 @@
 #ifndef H_TYPES
 #define H_TYPES
+#include <cctype>
 #include <cstdint>
 #include <type_traits>
 #include <memory>
@@ -46,6 +47,15 @@ constexpr Rect reduce(Rect r, f32 red)
     r.height - red*2.f
   };
 }
+
+constexpr Rect offset(Rect r, Vec2 offset)
+{ return { r.x + offset.x, r.y + offset.y, r.width, r.height }; }
+constexpr Rect scale(Rect r, Vec2 delta)
+{ return { r.x, r.y, r.width + delta.x, r.height + delta.y }; }
+constexpr Rect resize(Rect r, Vec2 new_size)
+{ return { r.x, r.y, new_size.x, new_size.y }; }
+constexpr std::string& to_lower(std::string& me)
+{ for (char& c : me) c = std::tolower(c); return me; }
 
 template <class... Ts>
 struct TypeSet

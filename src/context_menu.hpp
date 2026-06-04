@@ -43,7 +43,7 @@ inline mut make_menu_button = [](std::string&& name, std::string&& text) static 
   btn
     ->set_on_click(
       // note: btn is a pointer, we can take it by copy !
-      [btn](MouseButton) mutable
+      [btn]() mutable
       {
         mut* menu = btn->child->as<Layout>()->children[1]->as<Menu>();
         menu->top(btn->bottom());
@@ -84,9 +84,14 @@ void ContextMenu<T>::FUNC(BTN_TYPE BTN) \
   menu.FUNC(BTN); \
 }
 
-TRANSFER(
-  if (btn == MOUSE_RIGHT_BUTTON)
-  {
+
+template <class T>
+void ContextMenu<T>::on_click(MouseButton btn)
+{
+  if (
+      btn == MOUSE_RIGHT_BUTTON
+  and CheckCollisionPointRec(GetMousePosition(), T::rect)
+  ) {
     menu.show();
     let mpo = GetMousePosition();
     menu.x(mpo.x);
@@ -98,7 +103,10 @@ TRANSFER(
     just_clicked = true;
     return;
   }
-  , MouseButton, btn, on_click)
+  T::on_click(btn);
+  menu.on_click(btn);
+}
+
 TRANSFER(,MouseButton,btn, on_release)
 TRANSFER(,MouseButton,btn, on_drag)
 TRANSFER(,,, on_unfocus)
@@ -107,8 +115,7 @@ TRANSFER(,,, on_double_click)
 TRANSFER(,,, on_scroll)
 TRANSFER(,,, debug_draw)
 TRANSFER(,,, draw)
-TRANSFER(
-,,, update)
+TRANSFER(,,, update)
 
 template <class T>
 Widget* ContextMenu<T>::request(std::string_view name)

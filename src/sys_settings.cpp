@@ -1,7 +1,10 @@
 #include "sys_settings.hpp"
+#include "macros.hpp"
 #include "types.hpp"
 #include "rlgl.h"
+#include <algorithm>
 #include <cmath>
+#include <ranges>
 
 #define NANOSVG_IMPLEMENTATION
 #include "nanosvg.h"
@@ -19,7 +22,24 @@ Theme system_theme()
 { return THEME_DARK; }
 void load_icons(IconBuffer& buf)
 {
-  buf[CROSS] = load_svg("res/close-outline.svg", 128, 128);
+  let ld = [&buf](Icon icon, std::string&& stringified)
+  {
+    to_lower(stringified);
+    for (char& c : stringified)
+      if (c == '_')
+        c = '-';
+    buf[icon] = LoadTexture(("res/" + stringified + "-outline-temp.png").c_str());
+    SetTextureFilter(buf[icon], RL_TEXTURE_FILTER_TRILINEAR);
+  };
+#define LD(NAME) ld(ICON_##NAME, #NAME)
+  // buf[ICON_CROSS] = LoadTexture("res/close-outline.png");
+  // buf[ICON_ARROW_HEAD] = LoadTexture("res/arrowhead-right-outline-temp.png");
+  // buf[ICON_FULLSCREEN] = LoadTexture("res/fullscreen-outline-temp.png");
+  // buf[ICON_MINIMIZE] = LoadTexture("res/minimize-outline-temp.png");
+  LD(CLOSE);
+  LD(ARROW_HEAD);
+  LD(FULLSCREEN);
+  LD(MINIMIZE);
 }
 
 #else
