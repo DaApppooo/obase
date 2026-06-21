@@ -1,5 +1,6 @@
 #include "sys_settings.hpp"
 #include "macros.hpp"
+#include "raylib.h"
 #include "types.hpp"
 #include "rlgl.h"
 #include <algorithm>
@@ -32,14 +33,27 @@ void load_icons(IconBuffer& buf)
     SetTextureFilter(buf[icon], RL_TEXTURE_FILTER_TRILINEAR);
   };
 #define LD(NAME) ld(ICON_##NAME, #NAME)
-  // buf[ICON_CROSS] = LoadTexture("res/close-outline.png");
-  // buf[ICON_ARROW_HEAD] = LoadTexture("res/arrowhead-right-outline-temp.png");
-  // buf[ICON_FULLSCREEN] = LoadTexture("res/fullscreen-outline-temp.png");
-  // buf[ICON_MINIMIZE] = LoadTexture("res/minimize-outline-temp.png");
   LD(CLOSE);
   LD(ARROW_HEAD);
   LD(FULLSCREEN);
   LD(MINIMIZE);
+}
+
+u16 from_keycode(KeyboardKey key)
+{
+  switch (key)
+  {
+  case KEY_ESCAPE:
+    return '\e';
+  case KEY_ENTER:
+    return '\r';
+  case KEY_TAB:
+    return '\t';
+  case KEY_BACKSPACE:
+    return '\b';
+  default:
+    return static_cast<wchar_t>(key);
+  }
 }
 
 #else

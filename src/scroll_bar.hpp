@@ -169,7 +169,7 @@ struct ScrollBarStyle
   inline void on_drag(Widget* self);
   inline void on_release(Widget* self, MouseButton);
   inline void on_scroll(Widget* self);
-  void update(const char* widget_name, Rect total);
+  void update(Rect total);
   void draw(Rect total);
 };
 

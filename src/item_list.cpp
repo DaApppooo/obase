@@ -137,7 +137,7 @@ void ItemList::update()
   if (rect.height == 0)
     rect.height = palette().text_size + padding*2.f;
   if (opened() and should_show_scrollbar())
-    scrollbar.update(_name.c_str(), rect);
+    scrollbar.update(rect);
   Widget::update();
 }
 

@@ -53,7 +53,7 @@ void Hull::METH(BTN_T NAME) \
 { \
   if (!_visible) \
     return; \
-  if (CheckCollisionPointRec(GetMousePosition(), child->rect)) \
+  if (child and CheckCollisionPointRec(GetMousePosition(), child->rect)) \
     child->METH(NAME); \
 }
 

@@ -28,6 +28,7 @@ set(SRC
   src/resizable_scrollbar.cpp
   src/item_list.cpp
   src/split_proxy.cpp
+  src/text_box.cpp
 )
 
 add_executable(test

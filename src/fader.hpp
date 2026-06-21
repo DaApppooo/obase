@@ -46,7 +46,11 @@ struct Fader
     base.set();
   }
 
+  inline bool update(f32 dt) { return base.update(dt); }
+
   inline T operator * () const
+  { return base.get(src, dst); }
+  inline T get() const
   { return base.get(src, dst); }
 };
 

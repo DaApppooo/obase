@@ -5,6 +5,7 @@
 #pragma once
 
 #include "raylib.h"
+#include "types.hpp"
 
 enum Theme
 {
@@ -25,6 +26,7 @@ using IconBuffer = Texture[ICON_COUNT];
 float double_click_time();
 Theme system_theme();
 void load_icons(IconBuffer& buffer);
+u16 from_keycode(KeyboardKey keycode);
 
 // Drawing utilities extension:
 

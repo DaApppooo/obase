@@ -50,8 +50,8 @@ void Widget::on_scroll() {}
 void Widget::on_double_click() {}
 void Widget::on_drag(MouseButton) {}
 void Widget::on_release(MouseButton) {}
-void Widget::on_keydown(KeyboardKey) {}
-void Widget::on_keyup(KeyboardKey) {}
+void Widget::on_keydown(u16) {}
+void Widget::on_keyup(u16) {}
 void Widget::on_unfocus() {}
 void Widget::show() { _visible = true; }
 void Widget::hide() { _visible = false; }
@@ -63,6 +63,10 @@ void Widget::help(std::ostream& out)
 
 void Widget::update()
 {
+  if (rect.width == 0 or rect.height == 0)
+  {
+    TraceLog(LOG_WARNING, "Widget '%s' doesn't have its size properly set !", _name.c_str());
+  }
   for (mut anch : anchors)
   {
     if (anch.update())

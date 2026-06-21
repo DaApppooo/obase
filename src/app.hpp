@@ -55,8 +55,8 @@ struct Palette
   static Palette breeze_dark();
   static Palette breeze_light();
 
-  inline Color border(UIState state) { return _border[state]; }
-  inline Color bg(UIState state) { return _bg[state]; }
+  inline Color border(UIState state) const { return _border[state]; }
+  inline Color bg(UIState state) const { return _bg[state]; }
 
   void compute_largest_digit();
   

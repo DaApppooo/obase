@@ -5,15 +5,10 @@
 #include "types.hpp"
 #include "widget.hpp"
 
-void ScrollBarStyle::update(const char* widget_name, Rect total)
+void ScrollBarStyle::update(Rect total)
 {
   if (old_total_rect.width == 0 or old_total_rect.height == 0)
   {
-    TraceLog(
-      LOG_WARNING,
-      "ScrollBar named '%s' doesn't have its size properly set !",
-      widget_name
-    );
     old_total_rect = total = {0, 0,
       BUTTON_MIN_SIZE*2.f+HANDLE_MIN_SIZE,
       BUTTON_MIN_SIZE*2.f+HANDLE_MIN_SIZE
@@ -121,7 +116,7 @@ void ScrollBar::debug_draw()
 }
 void ScrollBar::update()
 {
-  style.update(_name.c_str(), rect);
+  style.update(rect);
   Widget::update();
 }
 void ScrollBar::draw()

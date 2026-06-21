@@ -14,6 +14,8 @@ App* _obase_current_app = nullptr;
 
 void focus(Widget *w)
 {
+  if (w == app().focused)
+    return;
   if (app().focused)
   {
     if (w)
@@ -124,7 +126,10 @@ void App::_events()
   BTNS(Released, on_release);
   let screen_w = GetScreenWidth(), screen_h = GetScreenHeight();
   if (root->rect.width != screen_w || root->rect.height != screen_h)
+  {
     redraw();
+    current_scissor = {0, 0, f32(screen_w), f32(screen_h)};
+  }
   root->rect = {0, 0, f32(screen_w), f32(screen_h)};
   let mpo = GetMousePosition();
   if ( 
@@ -180,14 +185,14 @@ void App::_events()
     {
       assert(key < _keys_pressed.size());
       _keys_pressed[key] = 1;
-      focused->on_keydown(KeyboardKey(key));
+      focused->on_keydown(from_keycode(KeyboardKey(key)));
     }
     for (u32 i = 0; i < _keys_pressed.size(); i++)
     {
       if (_keys_pressed[i] && IsKeyReleased(i))
       {
         _keys_pressed[i] = 0;
-        focused->on_keyup(KeyboardKey(i));
+        focused->on_keyup(from_keycode(KeyboardKey(i)));
       }
     }
   }
@@ -261,5 +266,6 @@ void Palette::compute_largest_digit()
   }
   dot_w = MeasureTextEx(font, ".", text_size, 2.f).x;
 }
+
 
 

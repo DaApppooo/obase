@@ -321,9 +321,9 @@ struct Widget
   // Called when the scroll wheel moved and the mouse is over the rect.
   virtual void on_scroll();
   // Called when the widget is focused (if focusable) and a key just got pressed.
-  virtual void on_keydown(KeyboardKey key);
+  virtual void on_keydown(u16 char_);
   // Called when the widget is focused (if focusable) and a key just got released.
-  virtual void on_keyup(KeyboardKey key);
+  virtual void on_keyup(u16 char_);
   // Called when the widget was focused.
   virtual void on_unfocus();
 
