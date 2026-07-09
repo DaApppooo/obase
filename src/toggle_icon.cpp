@@ -17,18 +17,16 @@ void ToggleIcon::on_hover()
 {
   ToggleButton::on_hover();
   hovering.set(1);
-  if (hovering.update(GetFrameTime()))
-    app().redraw();
+  hovering.update(GetFrameTime());
 }
 
 void ToggleIcon::on_leave()
 {
   ToggleButton::on_leave();
   hovering.set(0);
-  if (hovering.update(GetFrameTime()))
-    app().redraw();
+  hovering.update(GetFrameTime());
 }
-    
+
 void ToggleIcon::draw()
 {
   if (!visible())
@@ -45,7 +43,7 @@ void ToggleIcon::draw()
     color
   );
   let dt = GetFrameTime();
-  if (style.update(dt*0.5f) or hovering.update(dt))
-    app().redraw();
+  style.update(dt*0.5f);
+  hovering.update(dt);
 }
 

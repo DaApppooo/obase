@@ -20,7 +20,6 @@ void NumBox::on_click(MouseButton btn)
   if (app().focused)
     return;
   style.set_state(BTN_DOWN);
-  app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   FOCUS_ME;
   
@@ -39,7 +38,6 @@ void NumBox::on_scroll()
   i32 power = digit_power(rel_mpo);
   _x += delta*std::pow(10.0, power);
   _x = std::clamp(_x, min, max);
-  app().redraw();
 }
 
 void NumBox::on_drag(MouseButton btn)
@@ -51,14 +49,12 @@ void NumBox::on_drag(MouseButton btn)
   let delta = GetMouseDelta();
   _x += (delta.x-delta.y)/50.0*std::pow(10.0, _pow_sel);
   _x = std::clamp(_x, min, max);
-  app().redraw();
 }
 
 void NumBox::on_hover()
 {
   if (style.state == BTN_RELEASED)
   {
-    app().redraw();
     style.set_state(BTN_HOVERED);
   }
 }
@@ -66,7 +62,6 @@ void NumBox::on_leave()
 {
   if (style.state == BTN_HOVERED)
   {
-    app().redraw();
     style.set_state(BTN_RELEASED);
   }
 }
@@ -84,7 +79,6 @@ void NumBox::on_release(MouseButton btn)
   else
     style.set_state(BTN_RELEASED);
   _pow_sel = pow_max+1;
-  app().redraw();
   UNFOCUS_ME;
 }
 
@@ -99,8 +93,6 @@ void NumBox::update()
   let digit_count = pow_max - std::min(pow_min, 0) + 1;
   let new_w = digit_count*digit_size+dot_size + padding*2.f;
   w(new_w);
-  if (new_w != w())
-    app().redraw();
 }
 
 void NumBox::help(std::ostream& out)
@@ -169,8 +161,7 @@ void NumBox::draw()
     }
     ix += digit_size;
   }
-  if (style.update(GetFrameTime()))
-    app().redraw();
+  style.update(GetFrameTime());
 }
 
  

@@ -33,12 +33,8 @@ int main()
       ->when_off(ICON_CLOSE, WHITE)
       ->when_on(ICON_FULLSCREEN, RED)
       ->size(20, 20),
-      (new MonoTextBox("txt"))
-      ->set_on_validate(
-        [](const std::string& txt)
-        { println("hi {}", txt); }
-      )
-      ->size(100, 30)
+      (new MultiTextBox("txt"))
+      ->size(300, 200)
     )
   );
   let proxy = app.request("list.proxy")

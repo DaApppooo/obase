@@ -43,12 +43,9 @@ void ScrollBarStyle::draw(Rect total)
   macro f32 roundness = 0.2f;
   macro f32 thickness = 1.f;
   let dt = GetFrameTime();
-  if (min_btn_style.update(dt))
-    app().redraw();
-  if (max_btn_style.update(dt))
-    app().redraw();
-  if (handle_style.update(dt))
-    app().redraw();
+  min_btn_style.update(dt);
+  max_btn_style.update(dt);
+  handle_style.update(dt);
   DrawRoundedBox(
     groove(total),
     roundness, roundness,
@@ -72,12 +69,12 @@ void ScrollBarStyle::draw(Rect total)
   );
   palette().draw_icon(
     ICON_ARROW_HEAD, reduce(min_btn(total), 3.f),
-    orient == HORIZONTAL ? 180 : 90,
+    orient == HORIZONTAL ? 180 : -90,
     min_btn_style.border()
   );
   palette().draw_icon(
     ICON_ARROW_HEAD, reduce(max_btn(total), 3.f),
-    orient == HORIZONTAL ? 0 : -90,
+    orient == HORIZONTAL ? 0 : 90,
     max_btn_style.border()
   );
   
@@ -102,7 +99,7 @@ void ScrollBar::on_click(MouseButton btn)
 void ScrollBar::on_drag(MouseButton btn)
 { style.on_drag(this); }
 void ScrollBar::on_release(MouseButton btn)
-{ style.on_release(this, btn); }
+{ style.on_release(this, btn, true); }
 void ScrollBar::on_hover()
 { style.on_hover(this); }
 void ScrollBar::on_leave()

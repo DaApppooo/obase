@@ -7,6 +7,8 @@
 #include "push_button.hpp"
 #include "raylib.h"
 #include "raymath.h"
+#include "scroll_bar.hpp"
+#include "types.hpp"
 
 struct TextBoxStyle
 {
@@ -60,7 +62,8 @@ struct TextBoxStyle
   inline void on_keydown(Widget* self, u16 key);
   inline void on_keyup(Widget* self, u16 key);
 
-  inline void draw(Widget* self, AnchorPoint align_y);
+  // scroll is between 0 and 1. 0 being at the top and 1 at the bottom.
+  inline void draw(Widget* self, AnchorPoint align_y, f32 scroll);
   inline void update(Widget* self);
 };
 
@@ -108,18 +111,24 @@ struct MonoTextBox : Widget
 
 struct MultiTextBox : Widget
 {
-  static macro u32 USER_RESIZABLE_W = 0b0000'0000'0000'0001;
-  static macro u32 USER_RESIZABLE_H = 0b0000'0000'0000'0010;
-  
   TextBoxStyle style;
-  u32 flags;
+  ScrollBarStyle scrollbar;
 
   MultiTextBox(std::string&& name);
   
   ECHO_SETTERS(MultiTextBox);
   // The flags are declared inside MultiTextBox.
-  inline MultiTextBox* set_flags(u32 flags)
-  { this->flags = flags; return this; }
+  inline bool shows_scrollbar() const
+  { return style.measure_text().y > rect.height; }
+  inline Rect scrollbar_rect() const
+  {
+    return Rect{
+      rect.x + rect.width - ScrollBarStyle::BUTTON_MIN_SIZE,
+      rect.y,
+      ScrollBarStyle::BUTTON_MIN_SIZE,
+      rect.height
+    };
+  }
   
   void on_hover() override;
   void on_leave() override;
@@ -128,8 +137,10 @@ struct MultiTextBox : Widget
   void on_release(MouseButton) override;
   void on_keydown(u16 key) override;
   void on_keyup(u16 key) override;
+  void on_scroll() override;
 
   void draw() override;
+  void update() override;
 };
 
 inline void TextBoxStyle::text_map(
@@ -185,7 +196,6 @@ inline size_t TextBoxStyle::find_text_index(Rect total, Vec2 pos)
   if (br.x >= pos.x && br.y >= pos.y)
     return 0;
   size_t i = text.size();
-  DrawLineV(br, pos, RED);
   text_map(
     [this, &i, &br, &pal, pos, total](Font&,
       int codepoint,
@@ -206,7 +216,6 @@ inline size_t TextBoxStyle::find_text_index(Rect total, Vec2 pos)
         br.x - total.x,
         br.y - total.y
       };
-      DrawRectangleLinesEx(surface, 1.f, RED);
       if (CheckCollisionPointRec(pos, surface))
       {
         i = index;
@@ -262,7 +271,6 @@ inline void TextBoxStyle::on_click(Widget* self, MouseButton btn)
   if (not CheckCollisionPointRec(mpo, self->rect))
   {
     unfocus(self);
-    app().redraw();
     return;
   }
   box_style.set_state(BTN_DOWN);
@@ -279,7 +287,6 @@ inline void TextBoxStyle::on_drag(Widget* self, MouseButton btn)
   let mpo = GetMousePosition();
   cursor = find_text_index(self->rect, mpo);
   focus(self);
-  app().redraw();
 }
 
 inline void TextBoxStyle::on_release(Widget* self, MouseButton btn)
@@ -298,7 +305,6 @@ inline void TextBoxStyle::do_input(Widget* self, u16 c)
 {
   let SHIFT = IsKeyDown(KEY_LEFT_SHIFT) or IsKeyDown(KEY_RIGHT_SHIFT);
   let CTRL = IsKeyDown(KEY_LEFT_CONTROL) or IsKeyDown(KEY_RIGHT_CONTROL);
-  println("INPUT: {} ('{}') SHIFT={}, CTRL={}", c, char(c), SHIFT, CTRL);
   if (CTRL)
   {
     switch (c)
@@ -326,6 +332,7 @@ inline void TextBoxStyle::do_input(Widget* self, u16 c)
       let left = std::min(cursor, selection_start);
       let right = std::max(cursor, selection_start);
       text.replace_with_range(text.begin()+left, text.end()+right, str);
+      selection_start = cursor += left - right + str.size();
       break;
     }
     case KEY_LEFT:
@@ -395,12 +402,9 @@ inline void TextBoxStyle::do_input(Widget* self, u16 c)
       break;
     }
     }
-    app().redraw();
     return;
   }
-  if (c == '\r') // could be intercepted beforehand.
-    text += '\n';
-  else if ((c == '\b' or c == KEY_DELETE) and selection_start != cursor)
+  if ((c == '\b' or c == KEY_DELETE) and selection_start != cursor)
   {
     let min = std::min(cursor, selection_start);
     if (text.size())
@@ -452,8 +456,10 @@ inline void TextBoxStyle::do_input(Widget* self, u16 c)
     if (not SHIFT)
       selection_start = cursor;
   }
-  else if (isprint(c))
+  else if (isprint(c) or c == '\r')
   {
+    if (c == '\r')
+      c = '\n';
     mut char_to_insert = static_cast<char>(c);
     if (not SHIFT)
       char_to_insert = std::tolower(char_to_insert);
@@ -477,7 +483,6 @@ inline void TextBoxStyle::do_input(Widget* self, u16 c)
       i32(c)
     );
   }
-  app().redraw();
 }
 
 inline void TextBoxStyle::on_keydown(Widget* self, u16 key)
@@ -508,7 +513,7 @@ inline void TextBoxStyle::update(Widget* self)
     --keydown_timer;
 }
 
-inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y)
+inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y, f32 scroll)
 {
   assert(
      align_y == CENTER_Y
@@ -524,10 +529,9 @@ inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y)
     is_focused(self) ? pal.border(UI_SELECTED) : box_style.border(),
     box_style.bg()
   );
-  if (box_style.update(GetFrameTime()))
-    app().redraw();
+  box_style.update(GetFrameTime());
   let m = measure_text();
-  mut pos = Vec2{ self->rect.x + padding, 0};
+  mut pos = Vec2{ self->rect.x + padding, 0.f};
   switch (align_y)
   {
   case CENTER_Y:
@@ -545,6 +549,8 @@ inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y)
     [[assume(false)]];
     break;
   }
+  pos.y -= scroll * m.y;
+  let old_sc = app().scissor_begin(reduce(self->rect, 1.f));
   let start = pos;
   let spacing = 2.f;
   char buf[2] = {0, 0};
@@ -561,6 +567,7 @@ inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y)
       {
         pos.x = start.x;
         pos.y += size.y;
+        return true;
       }
       else
         pos.x += size.x;
@@ -593,10 +600,11 @@ inline void TextBoxStyle::draw(Widget* self, AnchorPoint align_y)
   if (cursor >= text.size())
   {
     DrawLineV(
-      start + m - Vec2{0.f, f32(pal.text_size)},
-      start + m,
+      pos + Vec2{0.f, f32(pal.text_size)},
+      pos,
       pal.border(UI_ACTIVE)
     );
   }
+  app().scissor_end(old_sc);
 }
 

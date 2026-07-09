@@ -51,9 +51,8 @@ struct ScrollBarStyle
   // scaled between 0 and 1
   inline f32 value(Rect total) const
   {
-    mut x = (xy(handle) - xy(total)) / (wh(groove(total)) - wh(handle));
-    if (orient == VERTICAL)
-      x = 1.f - x;
+    mut x = (xy(handle) - xy(total) - BUTTON_MIN_SIZE)
+            / (wh(groove(total)) - wh(handle));
     return x;
   }
   // scaled between 0 and 1 (so you can't use it just like that as a zoom)
@@ -67,7 +66,7 @@ struct ScrollBarStyle
       return { total.x, total.y, BUTTON_MIN_SIZE, total.height };
     else
       return {
-        total.x, total.y+total.height-BUTTON_MIN_SIZE,
+        total.x, total.y,
         total.width, BUTTON_MIN_SIZE
       };
   }
@@ -80,7 +79,7 @@ struct ScrollBarStyle
       };
     else
       return {
-        total.x, total.y,
+        total.x, total.y+total.height-BUTTON_MIN_SIZE,
         total.width, BUTTON_MIN_SIZE
       };
   }
@@ -88,16 +87,34 @@ struct ScrollBarStyle
   {
     if (orient == HORIZONTAL)
     {
-      handle.x = x * (wh(groove(total)) - wh(handle)) + xy(total);
+      handle.x = x * (wh(groove(total)) - wh(handle)) + xy(total)
+                 + BUTTON_MIN_SIZE;
     }
     else
     {
-      handle.y = (1.f - x) * (wh(groove(total)) - wh(handle)) + xy(total);
+      handle.y = x * (wh(groove(total)) - wh(handle)) + xy(total)
+                 + BUTTON_MIN_SIZE;
     }
+  }
+  // Set the zoom between 0 and 1. Just divide the visible size by the total size
+  // and you'll get the right value for this. Auto-clamps the handle.
+  inline void zoom(Rect total, f32 new_value)
+  {
+    if (orient == HORIZONTAL)
+    {
+      handle.width = HANDLE_MIN_SIZE
+                     + new_value * (wh(groove(total)) - HANDLE_MIN_SIZE);
+    }
+    else
+    {
+      handle.height = HANDLE_MIN_SIZE
+                     + new_value * (wh(groove(total)) - HANDLE_MIN_SIZE);
+    }
+    clamp(total);
   }
   // the side of the handle pointing towards the max value
   inline f32 handle_max() const
-  { return orient == HORIZONTAL ? handle.x+handle.width : handle.y; }
+  { return xy(handle) + wh(handle); }
   // the side of the handle pointing towards the max value.
   // will rescale the handle.
   // x is the screen position.
@@ -106,12 +123,11 @@ struct ScrollBarStyle
     if (orient == HORIZONTAL)
       handle.width = x - handle.x;
     else
-      handle.height += x - handle.y,
-      handle.y = x;
+      handle.height = x - handle.y;
   }
   // the side of the handle pointing towards the min value
   inline f32 handle_min() const
-  { return orient == HORIZONTAL ? handle.x : handle.y+handle.height; }
+  { return xy(handle); }
   // the side of the handle pointing towards the min value.
   // will rescale the handle.
   // x is the screen position. Use style.xy(my_position) to get the 
@@ -121,19 +137,20 @@ struct ScrollBarStyle
       handle.width += x - handle.x,
       handle.x = x;
     else
-      handle.height = x - handle.y;
+      handle.height += x - handle.y,
+      handle.y = x;
   }
   inline f32 groove_min(Rect total) const
   {
     return orient == HORIZONTAL
           ? groove(total).x
-          : groove(total).y+groove(total).height;
+          : groove(total).y;
   }
   inline f32 groove_max(Rect total) const
   {
     return orient == HORIZONTAL
             ? groove(total).x+groove(total).width
-            : groove(total).y;
+            : groove(total).y+groove(total).height;
   }
   
   inline void clamp(Rect total)
@@ -167,7 +184,7 @@ struct ScrollBarStyle
   inline void on_hover(Widget* self);
   inline void on_leave(Widget* self);
   inline void on_drag(Widget* self);
-  inline void on_release(Widget* self, MouseButton);
+  inline void on_release(Widget* self, MouseButton, bool can_unfocus);
   inline void on_scroll(Widget* self);
   void update(Rect total);
   void draw(Rect total);
@@ -257,9 +274,8 @@ inline void ScrollBarStyle::on_drag(Widget* self)
     handle.y += delta.y;
   old_mpo = mpo;
   clamp(self->rect);
-  app().redraw();
 }
-inline void ScrollBarStyle::on_release(Widget* self, MouseButton btn)
+inline void ScrollBarStyle::on_release(Widget* self, MouseButton btn, bool can_unfocus)
 {
   min_btn_style.on_release(
     self,
@@ -267,7 +283,8 @@ inline void ScrollBarStyle::on_release(Widget* self, MouseButton btn)
       value(self->rect, value(self->rect) - 0.1f);
       clamp(self->rect);
     },
-    btn
+    btn,
+    can_unfocus
   );
   max_btn_style.on_release(
     self,
@@ -275,12 +292,14 @@ inline void ScrollBarStyle::on_release(Widget* self, MouseButton btn)
       value(self->rect, value(self->rect) + 0.1f);
       clamp(self->rect);
     },
-    btn
+    btn,
+    can_unfocus
   );
   handle_style.on_release(
     self,
     nullptr,
-    btn
+    btn,
+    can_unfocus
   );
 }
 

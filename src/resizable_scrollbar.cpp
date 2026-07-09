@@ -97,7 +97,6 @@ void ResizableScrollBar::on_drag(MouseButton btn)
           style.handle.y = mpo.y;
         break;
     }
-    app().redraw();
   }
   else
     style.on_drag(this);
@@ -107,5 +106,5 @@ void ResizableScrollBar::on_drag(MouseButton btn)
 void ResizableScrollBar::on_release(MouseButton btn)
 {
   gripped = NONE;
-  style.on_release(this, btn);
+  style.on_release(this, btn, true);
 }

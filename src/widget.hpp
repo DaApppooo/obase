@@ -336,7 +336,6 @@ struct Widget
   // Write information about this plugin into the out stream.
   virtual void help(std::ostream& out);
   // Called only when redrawing is necessary.
-  // To ask for a redraw you can use app().redraw()
   virtual void draw() = 0;
   // Called around 60 times a second.
   virtual void update();

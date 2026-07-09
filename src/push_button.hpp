@@ -59,7 +59,12 @@ struct BaseButtonStyle
   inline void on_click(Widget* self, MouseButton);
   inline void on_hover();
   inline void on_leave();
-  inline void on_release(Widget* self, std::function<void()> on_hover_and_release, MouseButton);
+  inline void on_release(
+    Widget* self,
+    std::function<void()> on_hover_and_release,
+    MouseButton,
+    bool can_unfocus = true
+  );
 };
 
 struct ButtonStyle
@@ -119,7 +124,6 @@ inline void BaseButtonStyle::on_click(Widget* self, MouseButton btn)
   // if (app().focused)
   //   return;
   set_state(BTN_DOWN);
-  app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   focus(self);
 }
@@ -128,7 +132,6 @@ inline void BaseButtonStyle::on_hover()
 {
   if (state == BTN_RELEASED)
   {
-    app().redraw();
     set_state(BTN_HOVERED);
   }
 }
@@ -137,7 +140,6 @@ inline void BaseButtonStyle::on_leave()
 {
   if (state == BTN_HOVERED)
   {
-    app().redraw();
     set_state(BTN_RELEASED);
   }
 }
@@ -145,7 +147,8 @@ inline void BaseButtonStyle::on_leave()
 inline void BaseButtonStyle::on_release(
   Widget* self,
   std::function<void()> on_hover_and_release,
-  MouseButton btn
+  MouseButton btn,
+  bool can_unfocus
 ) {
   if (btn != MOUSE_BUTTON_LEFT)
     return;
@@ -160,7 +163,7 @@ inline void BaseButtonStyle::on_release(
   }
   else
     set_state(BTN_RELEASED);
-  app().redraw();
-  unfocus(self);
+  if (can_unfocus)
+    unfocus(self);
 }
 

@@ -69,8 +69,7 @@ void Widget::update()
   }
   for (mut anch : anchors)
   {
-    if (anch.update())
-      app().redraw();
+    anch.update();
   }
 }
 

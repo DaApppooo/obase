@@ -86,8 +86,7 @@ void ToggleButton::draw()
     segments,
     style.bg()
   );
-  if (style.update(GetFrameTime()))
-    app().redraw();
+  style.update(GetFrameTime());
   Hull::draw();
 }
 

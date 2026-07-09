@@ -16,8 +16,8 @@ struct Knob : Widget
 
   inline f32 value() const { return _anim; }
   inline f32 value(f32 min, f32 max) const { return _anim*(max-min)+min; }
-  inline f32 value(f32 x) { _anim = _x = x; app().redraw(); return _x; }
-  inline Knob* set_value(f32 x) { _anim = _x = x; app().redraw(); return this; }
+  inline f32 value(f32 x) { _anim = _x = x; return _x; }
+  inline Knob* set_value(f32 x) { _anim = _x = x; return this; }
   inline Knob* dent(int number_of_dents_between_min_max)
   { _auto_dents = number_of_dents_between_min_max; return this; }
   inline Knob* add_dent(f32 val)

@@ -24,7 +24,6 @@ void MenuEntry::on_click(MouseButton btn)
   if (btn != MOUSE_BUTTON_LEFT)
     return;
   style.set_state(BTN_DOWN);
-  app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   FOCUS_ME;
 }
@@ -33,7 +32,6 @@ void MenuEntry::on_hover()
 {
   if (style.state == BTN_RELEASED)
   {
-    app().redraw();
     style.set_state(BTN_HOVERED);
   }
 }
@@ -42,7 +40,6 @@ void MenuEntry::on_leave()
 {
   if (style.state == BTN_HOVERED)
   {
-    app().redraw();
     style.set_state(BTN_RELEASED);
   }
 }
@@ -68,7 +65,6 @@ void MenuEntry::on_release(MouseButton btn)
   }
   else
     style.set_state(BTN_RELEASED);
-  app().redraw();
   if (app().focused == this)
     focus(parent); // bring focus back to menu
 }
@@ -132,8 +128,7 @@ void MenuEntry::draw()
     font(), text.c_str(), {pos, draw_y}, palette().text_size,
     2.f, palette().text
   );
-  if (style.update(GetFrameTime()))
-    app().redraw();
+  style.update(GetFrameTime());
   if (submenu)
   {
     DrawTextEx(

@@ -1,7 +1,6 @@
 #ifndef H_MACROS
 #define H_MACROS
 #include <cassert>
-#include <functional>
 #include <ostream>
 #include <print>
 #include <type_traits>
@@ -9,8 +8,8 @@
 #include <generator>
 #include <sstream>
 #include <iostream>
-#include <concepts>
 #include <format>
+#include <vector>
 
 #define _DEBUG
 #ifdef _DEBUG
@@ -89,8 +88,6 @@ struct std::formatter<T> \
     return std::ranges::copy(std::move(out).str(), ctx.out()).out; \
   } \
 }
-
-
 
 FORMATTER(Rect, [](std::ostream& out, const Rect& r)
 {

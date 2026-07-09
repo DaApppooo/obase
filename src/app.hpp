@@ -1,4 +1,5 @@
 #pragma once
+#include "graphics.hpp"
 #include "macros.hpp"
 #include "raylib.h"
 #include "types.hpp"
@@ -76,8 +77,8 @@ struct App
   Widget* focused;
   Vec2 double_click_loc;
   f32 double_click_timer;
-  int _redraw;
   Rect current_scissor;
+  std::vector<Widget*> _gfx_widgets;
 
   App() = default;
 
@@ -105,7 +106,6 @@ struct App
     current_scissor = old_scissor;
     BeginScissorMode(EXPAND_RECT(old_scissor));
   }
-  inline void redraw() { if (_redraw > 1) _redraw = 0; }
   inline void set_cursor(MouseCursor new_cursor)
   {
     SetMouseCursor(new_cursor);

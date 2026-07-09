@@ -69,7 +69,6 @@ void App::run(const char* title)
   palette.compute_largest_digit();
   SetTextureFilter(palette.font.texture, TEXTURE_FILTER_TRILINEAR);
   assert(palette.font.recs != nullptr);
-  _redraw = -5;
   IFDEBUG(bool show_debug = false;)
   
   while (!WindowShouldClose())
@@ -80,19 +79,14 @@ void App::run(const char* title)
     if (IsKeyDown(KEY_LEFT_ALT) && IsKeyPressed(KEY_D))
     {
       show_debug = !show_debug;
-      _redraw = true;
     }
     )
     BeginDrawing();
-    if (_redraw < 10)
-    {
-      _redraw++;
-      ClearBackground(ColorBrightness(palette.bg(UI_ACTIVE), -0.1f));
-      root->draw();
-      if (focused)
-        focused->draw(); // redraw focused over everything. not ideal but it works
-      IFDEBUG(if (show_debug) root->debug_draw();)
-    }
+    ClearBackground(ColorBrightness(palette.bg(UI_ACTIVE), -0.1f));
+    root->draw();
+    if (focused)
+      focused->draw(); // redraw focused over everything. not ideal but it works
+    IFDEBUG(if (show_debug) root->debug_draw();)
     EndDrawing();
   }
 
@@ -127,7 +121,6 @@ void App::_events()
   let screen_w = GetScreenWidth(), screen_h = GetScreenHeight();
   if (root->rect.width != screen_w || root->rect.height != screen_h)
   {
-    redraw();
     current_scissor = {0, 0, f32(screen_w), f32(screen_h)};
   }
   root->rect = {0, 0, f32(screen_w), f32(screen_h)};

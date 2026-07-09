@@ -23,7 +23,7 @@ struct NumBox : Widget
   inline f32 value_scaled() const
   { return _x; }
   inline NumBox* set_value(f32 x)
-  { _x = x; app().redraw(); return this; }
+  { _x = x; return this; }
   inline NumBox* range(f64 min_, f64 max_)
   { min=min_; max=max_; _x = std::clamp(_x, min, max); return this; }
   // Minimum and maximum power of 10 for the display of the internal value.

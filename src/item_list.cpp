@@ -29,7 +29,6 @@ void ItemList::on_click(MouseButton btn)
        CheckCollisionPointRec(mpo, {x(), y(), w(), entry_size})
     or not CheckCollisionPointRec(mpo, rect)
     ) {
-      app().redraw();
       UNFOCUS_ME;
       return;
     }
@@ -67,14 +66,12 @@ void ItemList::on_click(MouseButton btn)
     assert(!is_focused(this));
     open();
   }
-  app().redraw();
 }
 
 void ItemList::on_hover()
 {
   if (!opened())
     return;
-  app().redraw();
   if (!should_show_scrollbar())
     return;
   let scroll = interior_scrollbar();
@@ -109,7 +106,7 @@ void ItemList::on_release(MouseButton btn)
     return;
   let scroll = interior_scrollbar();
   if (CheckCollisionPointRec(GetMousePosition(), scroll))
-    scrollbar.on_release(this, btn);
+    scrollbar.on_release(this, btn, true);
 }
 
 void ItemList::on_unfocus()

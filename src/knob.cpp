@@ -21,7 +21,6 @@ void Knob::on_click(MouseButton btn)
   if (app().focused)
     return;
   style.set_state(BTN_DOWN);
-  app().redraw();
   // button will continue to recieve events even if the cursor isn't over the object
   FOCUS_ME;
 }
@@ -41,7 +40,6 @@ void Knob::on_scroll()
     if (fabsf(_x - _custom_dent) < 0.05f)
       _anim = _custom_dent;
   }
-  app().redraw();
 }
 
 void Knob::on_drag(MouseButton btn)
@@ -63,14 +61,12 @@ void Knob::on_drag(MouseButton btn)
     if (fabsf(_x - _custom_dent) < 0.05f)
       _anim = _custom_dent;
   }
-  app().redraw();
 }
 
 void Knob::on_hover()
 {
   if (style.state == BTN_RELEASED)
   {
-    app().redraw();
     style.set_state(BTN_HOVERED);
   }
 }
@@ -78,7 +74,6 @@ void Knob::on_leave()
 {
   if (style.state == BTN_HOVERED)
   {
-    app().redraw();
     style.set_state(BTN_RELEASED);
   }
 }
@@ -95,7 +90,6 @@ void Knob::on_release(MouseButton btn)
   }
   else
     style.set_state(BTN_RELEASED);
-  app().redraw();
   UNFOCUS_ME;
 }
 
@@ -167,8 +161,7 @@ void Knob::draw()
     2.5f,
     color
   );
-  if (style.update(GetFrameTime()))
-    app().redraw();
+  style.update(GetFrameTime());
 }
 
 Knob::~Knob() {}

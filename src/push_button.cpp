@@ -101,8 +101,7 @@ void PushButton::draw()
     style.bg(),
     segments
   );
-  if (style.update(GetFrameTime()))
-    app().redraw();
+  style.update(GetFrameTime());
   Hull::draw();
 }
 

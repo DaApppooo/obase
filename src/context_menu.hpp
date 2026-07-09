@@ -99,7 +99,6 @@ void ContextMenu<T>::on_click(MouseButton btn)
     if (menu.w() == 0)
       menu.w(1);
     focus(&menu);
-    app().redraw();
     just_clicked = true;
     return;
   }
